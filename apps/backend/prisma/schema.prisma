@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  STUDENT
+  FACULTY
+  ADMIN
+}
+
+enum ProjectStatus {
+  PROPOSED
+  APPROVED
+  IN_PROGRESS
+  COMPLETED
+  PUBLISHED
+}
+
+enum ResourceType {
+  PDF
+  PPT
+  DOCX
+}
+
+model User {
+  id              String      @id @default(uuid())
+  email           String      @unique
+  passwordHash    String
+  name            String
+  role            Role
+  currentSemester Int?
+  departmentId    String?
+  department      Department? @relation(fields: [departmentId], references: [id])
+  createdAt       DateTime    @default(now())
+
+  facultyProfile    FacultyProfile?
+  uploadedResources Resource[]
+  projectsAsStudent ProjectStudent[]
+}
+
+model Department {
+  id   String @id @default(uuid())
+  name String
+  code String @unique
+
+  subjects Subject[]
+  students User[]
+}
+
+model Subject {
+  id           String     @id @default(uuid())
+  name         String
+  code         String     @unique
+  semester     Int
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  resources Resource[]
+}
+
+model FacultyProfile {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  designation       String?
+  researchInterests String[]
+  currentResearch   String?
+  skills            String[]
+  specialization    String?
+
+  availableForProjects Boolean @default(true)
+  maxStudents          Int     @default(4)
+  currentStudents      Int     @default(0)
+
+  projectsAsMentor Project[]
+}
+
+model Project {
+  id                 String        @id @default(uuid())
+  title              String
+  description        String
+  technologies       String[]
+  domain             String
+  status             ProjectStatus @default(PROPOSED)
+  startDate          DateTime?
+  expectedCompletion DateTime?
+
+  mentorId String
+  mentor   FacultyProfile @relation(fields: [mentorId], references: [id])
+
+  students ProjectStudent[]
+}
+
+model ProjectStudent {
+  id        String  @id @default(uuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@unique([projectId, userId])
+}
+
+model Resource {
+  id           String       @id @default(uuid())
+  title        String
+  fileUrl      String
+  type         ResourceType
+  academicYear String
+
+  subjectId String
+  subject   Subject @relation(fields: [subjectId], references: [id])
+
+  uploadedById String
+  uploadedBy   User   @relation(fields: [uploadedById], references: [id])
+
+  createdAt DateTime @default(now())
+}
