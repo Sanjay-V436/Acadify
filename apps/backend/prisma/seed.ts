@@ -131,7 +131,8 @@ async function main() {
     project = await prisma.project.create({
       data: {
         title: 'AI Based Smart Irrigation using IoT',
-        description: 'A soil-sensor-driven irrigation system with ML-based watering predictions',
+        description:
+          'A soil-sensor-driven irrigation system with ML-based watering predictions',
         technologies: ['Python', 'IoT', 'TensorFlow'],
         domain: 'Machine Learning',
         status: ProjectStatus.PROPOSED,
