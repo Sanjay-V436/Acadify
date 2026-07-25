@@ -37,6 +37,11 @@ export class AuthController {
     return this.authService.login(body.email, body.password);
   }
 
+  @Post('refresh')
+  refresh(@Body() body: { refreshToken: string }) {
+    return this.authService.refresh(body.refreshToken);
+  }
+
   @Get('me')
   @UseGuards(JwtAuthGuard)
   getProfile(@NestRequest() req: Request & { user: unknown }): unknown {

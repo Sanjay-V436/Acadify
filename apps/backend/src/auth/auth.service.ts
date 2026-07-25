@@ -71,4 +71,22 @@ export class AuthService {
 
     return { accessToken, refreshToken };
   }
+  async refresh(refreshToken: string) {
+    let payload: { sub: string; email: string; role: Role };
+
+    try {
+      payload = await this.jwtService.verifyAsync(refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET,
+      });
+    } catch {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+
+    const user = await this.usersService.findByEmail(payload.email);
+    if (!user) {
+      throw new UnauthorizedException('User no longer exists');
+    }
+
+    return this.generateTokens(user.id, user.email, user.role);
+  }
 }
