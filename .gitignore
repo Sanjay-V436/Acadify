@@ -7,3 +7,4 @@ venv/
 .next/
 dist/
 build/
+chroma_data/
