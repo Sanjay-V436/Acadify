@@ -27,6 +27,28 @@ services:
     depends_on:
       - backend
 
+  ai-service:
+    build:
+      context: ./apps/ai-service
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./apps/ai-service:/app
+    environment:
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+    depends_on:
+      - chromadb
+
+  chromadb:
+    image: chromadb/chroma
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+
 volumes:
   backend_node_modules:
   frontend_node_modules:
+  chroma_data:

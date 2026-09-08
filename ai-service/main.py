@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI
 from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer
@@ -10,7 +12,13 @@ print("Loading BGE-Small model...")
 model = SentenceTransformer("BAAI/bge-small-en-v1.5")
 print("Model loaded.")
 
-chroma_client = chromadb.HttpClient(host="localhost", port=8000)
+# CHROMA_HOST defaults to "localhost" for running outside Docker (your
+# normal local dev flow). Inside docker-compose, this is set to
+# "chromadb" — the service name — since containers can't reach each
+# other via localhost.
+CHROMA_HOST = os.environ.get("CHROMA_HOST", "localhost")
+CHROMA_PORT = int(os.environ.get("CHROMA_PORT", "8000"))
+chroma_client = chromadb.HttpClient(host=CHROMA_HOST, port=CHROMA_PORT)
 faculty_collection = chroma_client.get_or_create_collection(name="faculty_profiles")
 
 
