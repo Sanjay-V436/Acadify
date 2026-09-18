@@ -7,6 +7,8 @@ from pydantic import BaseModel, field_validator
 from sentence_transformers import SentenceTransformer
 import chromadb
 
+from gemini_service import GeminiAnalysisService, RecommendationAnalysis
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("acadify-ai-service")
 
@@ -18,8 +20,12 @@ print("Model loaded.")
 
 CHROMA_HOST = os.environ.get("CHROMA_HOST", "localhost")
 CHROMA_PORT = int(os.environ.get("CHROMA_PORT", "8000"))
-chroma_client = chromadb.HttpClient(host=CHROMA_HOST, port=CHROMA_PORT)
+chroma_client = chromadb.HttpClient(
+    host=CHROMA_HOST,
+    port=CHROMA_PORT,
+)
 faculty_collection = chroma_client.get_or_create_collection(name="faculty_profiles")
+gemini_service = GeminiAnalysisService()
 
 
 @app.get("/")
@@ -64,6 +70,7 @@ def test_embed(request: EmbedRequest):
 class MentorRecommendationRequest(BaseModel):
     project_title: str
     description: str | None = None
+    top_k: int = 5
 
     @field_validator("project_title")
     @classmethod
@@ -141,8 +148,66 @@ def rerank_with_availability(mentors: list[dict]) -> list[dict]:
     return mentors
 
 
+FALLBACK_REASON = (
+    "Semantic match found from the faculty research profile. "
+    "AI explanation is temporarily unavailable."
+)
+
+
+def fallback_match_level(semantic_similarity: float) -> str:
+    if semantic_similarity >= 0.65:
+        return "High"
+    if semantic_similarity >= 0.4:
+        return "Moderate"
+    return "Low"
+
+
+def build_recommendation(
+    candidate: dict,
+    analysis: RecommendationAnalysis | None,
+) -> dict:
+    if analysis is None:
+        analysis_data = {
+            "match_level": fallback_match_level(candidate["semantic_similarity"]),
+            "why_matched": [],
+            "why_not_higher": [],
+            "technical_overlap": [],
+            "domain_overlap": [],
+            "missing_expertise": [],
+            "strengths": [],
+            "limitations": [],
+            "summary": FALLBACK_REASON,
+            "recommendation_reason": FALLBACK_REASON,
+        }
+    else:
+        analysis_data = analysis.model_dump(exclude={"faculty_id"})
+
+    return {
+        "faculty_id": candidate["faculty_id"],
+        "name": candidate["name"],
+        "designation": candidate["designation"],
+        "department": candidate["department"],
+        "research_interests": candidate["research_interests"],
+        "qualifications": candidate["qualifications"],
+        "profile_url": candidate["profile_url"],
+        "confidence_score": candidate["confidence_score"],
+        "research_match_percent": candidate["research_match_percent"],
+        "semantic_similarity": candidate["semantic_similarity"],
+        "chroma_distance": candidate["chroma_distance"],
+        "available_for_projects": candidate["available_for_projects"],
+        "available_slots": candidate["available_slots"],
+        "max_students": candidate["max_students"],
+        "current_students": candidate["current_students"],
+        "reasoning": analysis_data["recommendation_reason"],
+        **analysis_data,
+    }
+
+
 @app.post("/ai/mentor-recommendation")
-def mentor_recommendation(request: MentorRecommendationRequest, top_n: int = 5):
+def mentor_recommendation(
+    request: MentorRecommendationRequest,
+    top_n: int | None = None,
+):
     """
     Matches the agreed API contract with Person B (Sanjay):
 
@@ -160,6 +225,8 @@ def mentor_recommendation(request: MentorRecommendationRequest, top_n: int = 5):
     accessible from this service yet. Swap get_availability() for a real
     lookup once that's sorted with Sanjay.
     """
+    recommendation_limit = max(1, min(top_n if top_n is not None else request.top_k, 5))
+
     query_text = request.project_title
     if request.description:
         query_text += ". " + request.description
@@ -174,15 +241,22 @@ def mentor_recommendation(request: MentorRecommendationRequest, top_n: int = 5):
             detail="Failed to process the project description. Please try again.",
         )
 
-    # Fetch more than top_n from ChromaDB, since re-ranking by availability
-    # might promote someone who wasn't in the raw top N by similarity alone.
-    fetch_n = min(top_n * 3, 20)
+    # Retrieve the top 10 semantic candidates for second-stage analysis.
+    fetch_n = min(10, faculty_collection.count())
+    if fetch_n == 0:
+        logger.warning("No faculty matches found for query: %s", query_text)
+        return {
+            "mentors": [],
+            "recommendations": [],
+            "ai_analysis_available": False,
+        }
 
     # --- Query ChromaDB ---
     try:
         results = faculty_collection.query(
             query_embeddings=[query_embedding],
             n_results=fetch_n,
+            include=["documents", "metadatas", "distances"],
         )
     except Exception:
         logger.exception("ChromaDB query failed")
@@ -196,34 +270,80 @@ def mentor_recommendation(request: MentorRecommendationRequest, top_n: int = 5):
         logger.warning("No faculty matches found for query: %s", query_text)
         return {"mentors": []}
 
-    mentors = []
+    candidates = []
     for i in range(len(results["ids"][0])):
         faculty_id = results["ids"][0][i]
-        metadata = results["metadatas"][0][i]
+        metadata = results["metadatas"][0][i] or {}
+        document = (results.get("documents") or [[]])[0][i] or ""
         distance = results["distances"][0][i]
+        availability = get_availability(faculty_id)
 
         research_match_percent = round(max(0, (1 - distance) * 100), 1)
-        confidence_score = round(research_match_percent / 100, 3)
+        semantic_similarity = round(research_match_percent / 100, 3)
 
-        mentors.append({
+        candidates.append({
             "faculty_id": faculty_id,
-            "name": metadata.get("name", ""),
-            "confidence_score": confidence_score,
+            "name": metadata.get("name", "Not provided"),
+            "designation": metadata.get("designation", "Not provided"),
+            "department": "Not provided",
+            "research_interests": metadata.get("research_interests", "Not provided"),
+            "qualifications": "Not provided",
+            "profile_url": metadata.get("profile_url", "Not provided"),
+            "profile_document": document,
+            "confidence_score": semantic_similarity,
             "research_match_percent": research_match_percent,
-            "available_slots": -1,  # overwritten by rerank step below
-            "reasoning": (
-                f"Matched based on semantic similarity between the project "
-                f"description and {metadata.get('name', 'this faculty member')}'s "
-                f"research profile ({metadata.get('designation', '')})."
-            ),
+            "semantic_similarity": semantic_similarity,
+            "chroma_distance": distance,
+            **availability,
         })
 
     try:
-        mentors = rerank_with_availability(mentors)
+        candidates = rerank_with_availability(candidates)
     except Exception:
         # If availability re-ranking fails for any reason, fall back to
         # raw semantic ranking rather than failing the whole request —
         # a slightly-worse-ranked result is much better than no result.
         logger.exception("Availability re-ranking failed, falling back to raw semantic ranking")
 
-    return {"mentors": mentors[:top_n]}
+    logger.info("[AI] Chroma candidates: %d", len(candidates))
+    analysis = gemini_service.analyze(
+        project_title=request.project_title,
+        project_description=request.description or "",
+        candidates=candidates,
+    )
+    analysis_by_id = {
+        item.faculty_id: item
+        for item in (analysis.recommendations if analysis else [])
+    }
+
+    ordered_candidates = candidates
+    if analysis:
+        candidate_by_id = {
+            candidate["faculty_id"]: candidate for candidate in candidates
+        }
+        analyzed_ids = [
+            item.faculty_id
+            for item in analysis.recommendations
+            if item.faculty_id in candidate_by_id
+        ]
+        ordered_candidates = [candidate_by_id[faculty_id] for faculty_id in analyzed_ids]
+        ordered_candidates.extend(
+            candidate
+            for candidate in candidates
+            if candidate["faculty_id"] not in set(analyzed_ids)
+        )
+
+    recommendations = [
+        build_recommendation(
+            candidate,
+            analysis_by_id.get(candidate["faculty_id"]) if analysis else None,
+        )
+        for candidate in ordered_candidates[:recommendation_limit]
+    ]
+    logger.info("[AI] Gemini recommendations returned: %d", len(recommendations))
+
+    return {
+        "mentors": recommendations,
+        "recommendations": recommendations,
+        "ai_analysis_available": analysis is not None,
+    }
