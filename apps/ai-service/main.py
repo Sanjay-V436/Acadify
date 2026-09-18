@@ -1,10 +1,14 @@
+import logging
 import os
 import random
 
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, field_validator
 from sentence_transformers import SentenceTransformer
 import chromadb
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("acadify-ai-service")
 
 app = FastAPI(title="Acadify AI Service")
 
@@ -30,9 +34,10 @@ def health_check():
         chroma_ok = True
     except Exception:
         chroma_ok = False
+        logger.warning("Health check: ChromaDB is unreachable")
 
     return {
-        "status": "healthy",
+        "status": "healthy" if chroma_ok else "degraded",
         "model_loaded": model is not None,
         "chromadb_connected": chroma_ok,
     }
@@ -59,6 +64,13 @@ def test_embed(request: EmbedRequest):
 class MentorRecommendationRequest(BaseModel):
     project_title: str
     description: str | None = None
+
+    @field_validator("project_title")
+    @classmethod
+    def project_title_not_blank(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("project_title cannot be empty or just whitespace")
+        return v.strip()
 
 
 # -----------------------------------------------------------------
@@ -152,16 +164,37 @@ def mentor_recommendation(request: MentorRecommendationRequest, top_n: int = 5):
     if request.description:
         query_text += ". " + request.description
 
-    query_embedding = model.encode(query_text).tolist()
+    # --- Generate embedding ---
+    try:
+        query_embedding = model.encode(query_text).tolist()
+    except Exception:
+        logger.exception("Failed to generate embedding for query: %s", query_text)
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to process the project description. Please try again.",
+        )
 
     # Fetch more than top_n from ChromaDB, since re-ranking by availability
     # might promote someone who wasn't in the raw top N by similarity alone.
     fetch_n = min(top_n * 3, 20)
 
-    results = faculty_collection.query(
-        query_embeddings=[query_embedding],
-        n_results=fetch_n,
-    )
+    # --- Query ChromaDB ---
+    try:
+        results = faculty_collection.query(
+            query_embeddings=[query_embedding],
+            n_results=fetch_n,
+        )
+    except Exception:
+        logger.exception("ChromaDB query failed")
+        raise HTTPException(
+            status_code=503,
+            detail="Faculty matching service is temporarily unavailable. Please try again shortly.",
+        )
+
+    # --- Handle empty collection / no matches gracefully ---
+    if not results.get("ids") or not results["ids"][0]:
+        logger.warning("No faculty matches found for query: %s", query_text)
+        return {"mentors": []}
 
     mentors = []
     for i in range(len(results["ids"][0])):
@@ -185,6 +218,12 @@ def mentor_recommendation(request: MentorRecommendationRequest, top_n: int = 5):
             ),
         })
 
-    mentors = rerank_with_availability(mentors)
+    try:
+        mentors = rerank_with_availability(mentors)
+    except Exception:
+        # If availability re-ranking fails for any reason, fall back to
+        # raw semantic ranking rather than failing the whole request —
+        # a slightly-worse-ranked result is much better than no result.
+        logger.exception("Availability re-ranking failed, falling back to raw semantic ranking")
 
     return {"mentors": mentors[:top_n]}
