@@ -1,5 +1,3 @@
-# Acadify AI Service — dev Dockerfile (matches backend/frontend Dockerfile.dev pattern)
-
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -8,14 +6,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Installed into the image layer, not the mounted volume — so unlike
-# node_modules, this doesn't get wiped out when the source folder is
-# mounted over /app in docker-compose.
 COPY requirements.txt .
+
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-EXPOSE 8001
+EXPOSE 10000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-10000}"]

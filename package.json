@@ -1,0 +1,10 @@
+{
+  "name": "acadify",
+  "private": true,
+   "devDependencies": {
+     "concurrently": "^10.0.5"
+   },
+  "scripts": {
+    "dev": "concurrently -k -p \"[{name}]\" -c \"blue.bold,magenta.bold,green.bold\" -n \"AI,BACKEND,FRONTEND\" \"cd apps/ai-service && .\\venv\\Scripts\\python.exe -m uvicorn main:app --reload --port 8001\" \"cd apps/backend && npm run start:dev\" \"cd apps/frontend && npm run dev\""
+  }
+}
