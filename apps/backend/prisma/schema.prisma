@@ -89,11 +89,16 @@ model Project {
   technologies       String[]
   domain             String
   status             ProjectStatus @default(PROPOSED)
+  githubUrl          String?
+  liveDemoUrl        String?
+  imageUrl           String?
   startDate          DateTime?
   expectedCompletion DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 
-  mentorId String
-  mentor   FacultyProfile @relation(fields: [mentorId], references: [id])
+  mentorId String?
+  mentor   FacultyProfile? @relation(fields: [mentorId], references: [id])
 
   students ProjectStudent[]
 }

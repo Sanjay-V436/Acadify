@@ -11,11 +11,16 @@ export class MentorRecommendationController {
 
   @Post()
   async getRecommendations(
-    @Body() body: { project_title: string; description?: string },
+    @Body()
+    body: {
+      project_title?: string;
+      title?: string;
+      projectTitle?: string;
+      description?: string;
+      top_k?: number;
+      topK?: number;
+    },
   ) {
-    return this.mentorRecommendationService.getRecommendations(
-      body.project_title,
-      body.description,
-    );
+    return this.mentorRecommendationService.getRecommendations(body);
   }
 }

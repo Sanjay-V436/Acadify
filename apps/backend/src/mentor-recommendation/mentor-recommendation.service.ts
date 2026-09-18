@@ -15,24 +15,44 @@ interface AIMentor {
 
 interface AIServiceResponse {
   mentors?: AIMentor[];
+  recommendations?: AIMentor[];
+  ai_analysis_available?: boolean;
+}
+
+interface MentorRecommendationRequest {
+  project_title?: string;
+  title?: string;
+  projectTitle?: string;
+  description?: string;
+  top_k?: number;
+  topK?: number;
 }
 
 @Injectable()
 export class MentorRecommendationService {
   constructor(private prisma: PrismaService) {}
 
-  async getRecommendations(projectTitle: string, description?: string) {
+  async getRecommendations(dto: MentorRecommendationRequest) {
     const aiBaseUrl = process.env.AI_SERVICE_URL || 'http://localhost:8001';
+    const title =
+      dto.project_title?.trim() ||
+      dto.title?.trim() ||
+      dto.description?.substring(0, 50) ||
+      'Academic Project';
+
+    const payload = {
+      project_title: title,
+      description: dto.description || '',
+      top_k: Number(dto.top_k || 5),
+    };
 
     let response: Response;
     try {
+      console.log('Mentor recommendation payload:', payload);
       response = await fetch(`${aiBaseUrl}/ai/mentor-recommendation`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          project_title: projectTitle,
-          description: description || '',
-        }),
+        body: JSON.stringify(payload),
       });
     } catch (error: unknown) {
       const message =
@@ -49,7 +69,8 @@ export class MentorRecommendationService {
     }
 
     const aiData = (await response.json()) as AIServiceResponse;
-    const aiMentors: AIMentor[] = aiData.mentors || [];
+    const aiMentors: AIMentor[] =
+      aiData.recommendations ?? aiData.mentors ?? [];
 
     // Extract returned UUIDs (from faculty-id-mapping re-seeded ChromaDB)
     const facultyIds = aiMentors.map((m) => m.faculty_id);
@@ -83,7 +104,11 @@ export class MentorRecommendationService {
         };
       });
 
-      return { mentors: enrichedMentors };
+      return {
+        mentors: enrichedMentors,
+        recommendations: enrichedMentors,
+        ai_analysis_available: aiData.ai_analysis_available ?? false,
+      };
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Database query failed';
