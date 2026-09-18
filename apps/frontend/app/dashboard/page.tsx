@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   getCurrentUser,
   logout,
@@ -30,7 +31,7 @@ export default function DashboardPage() {
     }, 0);
 
     return () => clearTimeout(t);
-  }, []);
+  }, [router]);
 
   const handleLogout = () => {
     logout();
@@ -104,6 +105,28 @@ function StudentDashboard({
         Mentor recommendations, study resources, and your
         projects will appear here.
       </p>
+
+      <Link
+        href="/dashboard/mentor-recommendation"
+        className="mt-8 block rounded-lg border-2 border-[#E8A33D] bg-[#A4123F] p-6 text-white shadow-sm transition hover:bg-[#8D0F36] focus:outline-none focus:ring-2 focus:ring-[#E8A33D] focus:ring-offset-2"
+      >
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <span className="inline-block rounded-full bg-[#E8A33D] px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#2B2B2E]">
+              Flagship Feature
+            </span>
+            <h3 className="mt-3 text-2xl font-bold">Find Project Mentor</h3>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-white/85">
+              Get matched with faculty based on research alignment and live
+              slot availability
+            </p>
+          </div>
+
+          <span className="shrink-0 text-sm font-bold text-[#E8A33D]">
+            Launch Matching &rarr;
+          </span>
+        </div>
+      </Link>
     </div>
   );
 }
