@@ -1,0 +1,31 @@
+student_id,Hit@1,Hit@3,Hit@5,Recall@1,Recall@3,Recall@5,MRR,NDCG@5,Top1,Top2,Top3,Top4,Top5
+S001,0,1,1,0.0,0.5,0.5,0.5,0.6309297535714575,Dr. K. Anitha,Dr. N. Aishwarya,Dr. Lakshmanan S. A,Swathi T. S.,Venkatakrishnan K S
+S002,0,0,1,0.0,0.0,1.0,0.25,0.5012658353418871,Dr. Maran Ponnambalam,Dr. N. Aishwarya,Dr. Lakshmanan S. A,A. C. Sakkthi Saranya,Dr. V. Thenmozhi
+S003,1,1,1,0.3333333333333333,0.3333333333333333,0.6666666666666666,1.0,0.8772153153380493,Dr. Gayathri M.,Devanathan B.,Dr. Rishi Kumar,Dr. Ravichandran M.,Dr. Lakshmanan S. A
+S004,1,1,1,0.5,1.0,1.0,1.0,1.0,Dr. N. Aishwarya,Dr. P. Mathivanan,Dr. K. Anitha,Dr. Lakshmanan S. A,Dr. C. Ganesh Kumar
+S005,0,0,0,0.0,0.0,0.0,0.14285714285714285,0.0,Dr. Lakshmanan S. A,Dr. Gayathri M.,Dr. P. Selvaraj,A. C. Sakkthi Saranya,Dr. Rishi Kumar
+S006,0,1,1,0.0,1.0,1.0,0.5,0.6934264036172708,Swathi T. S.,Dr. Jeyalakshmi S.,Dr. K. Anitha,Devanathan B.,S. Thiagarajan
+S007,0,0,0,0.0,0.0,0.0,0.08333333333333333,0.0,Dr. Lakshmanan S. A,Devanathan B.,Dr. K. Anitha,Dr. P. Selvaraj,Dr. N. Aishwarya
+S008,1,1,1,1.0,1.0,1.0,1.0,1.0,Dr. Ravichandran M.,Dr. Maran Ponnambalam,A. C. Sakkthi Saranya,Swathi T. S.,Dr. P. Mathivanan
+S009,0,0,1,0.0,0.0,1.0,0.2,0.38685280723454163,Devanathan B.,Dr. Jeyalakshmi S.,Dr. K. Anitha,A. C. Sakkthi Saranya,Dr. Ravichandran M.
+S010,1,1,1,1.0,1.0,1.0,1.0,1.0,Dr. K. Anitha,Devanathan B.,Swathi T. S.,Dr. Rishi Kumar,Dr. N. Aishwarya
+S011,1,1,1,0.5,0.5,1.0,1.0,0.8772153153380493,Dr. Gayathri M.,Simhadri Ravishankar,Dr. Gorthala Guruprasad,Dr. Sita Devi Bharatula,Devanathan B.
+S012,0,1,1,0.0,0.5,1.0,0.5,0.6509209298071326,Dr. Maran Ponnambalam,Dr. V. Thenmozhi,Dr. Lakshmanan S. A,A. C. Sakkthi Saranya,Simhadri Ravishankar
+S013,0,0,0,0.0,0.0,0.0,0.08333333333333333,0.0,Dr. Maran Ponnambalam,Dr. Lakshmanan S. A,Dr. Gayathri M.,Dr. Srikant K M,Dr. Amirthalakshmi T. M.
+S014,1,1,1,1.0,1.0,1.0,1.0,1.0,Dr. K. Anitha,Swathi T. S.,Dr. Jeyalakshmi S.,Dr. Abhishek Jha,Devanathan B.
+S015,1,1,1,0.5,1.0,1.0,1.0,1.0,Dr. N. Aishwarya,Dr. P. Mathivanan,Dr. K. Anitha,Dr. Lakshmanan S. A,Dr. Maran Ponnambalam
+S016,0,1,1,0.0,0.5,0.5,0.5,0.6309297535714575,Dr. Abhishek Jha,Dr. Dev Kunwar Singh Chauhan,Dr. Rishi Kumar,Dr. P. Selvaraj,Dr. Maran Ponnambalam
+S017,1,1,1,0.3333333333333333,0.3333333333333333,0.3333333333333333,1.0,1.0,Dr. Rishi Kumar,Devanathan B.,Dr. Lakshmanan S. A,Dr. N. Aishwarya,Dr. Abhishek Jha
+S018,1,1,1,0.5,0.5,0.5,1.0,1.0,Dr. Jeyalakshmi S.,Hariharan M.,Dr. Dev Kunwar Singh Chauhan,Devanathan B.,A. C. Sakkthi Saranya
+S019,1,1,1,0.3333333333333333,0.3333333333333333,0.6666666666666666,1.0,0.8503449055347546,Dr. Gayathri M.,Dr. Rishi Kumar,Devanathan B.,Dr. Lakshmanan S. A,Dr. Ravichandran M.
+S020,1,1,1,0.5,1.0,1.0,1.0,0.9197207891481876,Simhadri Ravishankar,Dr. Gayathri M.,Dr. Sita Devi Bharatula,Dr. C. Ganesh Kumar,Dr. Ravichandran M.
+S021,0,0,0,0.0,0.0,0.0,0.07142857142857142,0.0,Dr. Maran Ponnambalam,Dr. K. Anitha,Dr. P. Mathivanan,Dr. Lakshmanan S. A,Swathi T. S.
+S022,1,1,1,0.5,0.5,0.5,1.0,1.0,Dr. K. Anitha,Swathi T. S.,Dr. Shakti P. Jena,Devanathan B.,Dr. N. Aishwarya
+S023,0,0,0,0.0,0.0,0.0,0.1111111111111111,0.0,Dr. P. Selvaraj,Devanathan B.,Dr. Lakshmanan S. A,Dr. K. Anitha,Dr. Maran Ponnambalam
+S024,0,0,0,0.0,0.0,0.0,0.1111111111111111,0.0,Dr. Damodaran V.,Dr. Gayathri M.,Dr. Gorthala Guruprasad,Dr. Rishi Kumar,Dr. Lakshmanan S. A
+S025,0,1,1,0.0,0.6666666666666666,1.0,0.5,0.7122630665145961,Dr. Maran Ponnambalam,Dr. V. Thenmozhi,A. C. Sakkthi Saranya,Dr. P. Mathivanan,Dr. N. Aishwarya
+S026,0,0,1,0.0,0.0,0.5,0.25,0.43067655807339306,Dr. Jeyalakshmi S.,Hariharan M.,Swathi T. S.,Dr. K. Anitha,Dr. Dev Kunwar Singh Chauhan
+S027,0,0,0,0.0,0.0,0.0,0.14285714285714285,0.0,Dr. Lakshmanan S. A,Devanathan B.,Dr. P. Selvaraj,Dr. Rishi Kumar,Dr. K. Anitha
+S028,0,1,1,0.0,1.0,1.0,0.5,0.6309297535714575,Swathi T. S.,Dr. K. Anitha,A. C. Sakkthi Saranya,Devanathan B.,Dr. Ravichandran M.
+S029,0,1,1,0.0,0.5,0.5,0.5,0.6309297535714575,Dr. Abhishek Jha,Dr. Dev Kunwar Singh Chauhan,Dr. N. Aishwarya,Dr. Lakshmanan S. A,Devanathan B.
+S030,1,1,1,0.5,0.5,0.5,1.0,1.0,Hariharan M.,Swathi T. S.,Venkatakrishnan K S,Dr. Sanchanna Ganesan,Dr. Srikant K M

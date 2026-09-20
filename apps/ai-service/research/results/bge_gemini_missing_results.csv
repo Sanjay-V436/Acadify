@@ -1,0 +1,6 @@
+student_id,Hit@1,Hit@3,Hit@5,Recall@1,Recall@3,Recall@5,MRR,NDCG@5,Top1,Top2,Top3,Top4,Top5
+S017,1,1,1,0.3333333333333333,0.6666666666666666,0.6666666666666666,1.0,1.0,Dr. Rishi Kumar,Dr. C. Ganesh Kumar,Dr. N. Aishwarya,Devanathan B.,Dr. P. Selvaraj
+S018,1,1,1,0.5,0.5,0.5,1.0,1.0,Dr. Jeyalakshmi S.,Hariharan M.,Dr. Abhishek Jha,Dr. Dev Kunwar Singh Chauhan,Dr. Rishi Kumar
+S019,1,1,1,0.3333333333333333,0.6666666666666666,1.0,1.0,0.9674679834891693,Dr. Gayathri M.,Dr. Ravichandran M.,Dr. Gorthala Guruprasad,Dr. Sita Devi Bharatula,Dr. Rishi Kumar
+S020,0,1,1,0.0,0.5,1.0,0.5,0.6240505200038379,Dr. C. Ganesh Kumar,Dr. Sita Devi Bharatula,Dr. Ravichandran M.,Dr. Gayathri M.,Simhadri Ravishankar
+S021,0,0,0,0.0,0.0,0.0,0.0,0.0,Dr. P. Mathivanan,Dr. Lakshmanan S. A,Dr. Maran Ponnambalam,Dr. K. Anitha,Swathi T. S.

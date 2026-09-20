@@ -1,0 +1,31 @@
+student_id,Hit@1,Hit@3,Hit@5,Recall@1,Recall@3,Recall@5,MRR,NDCG@5,Top1,Top2,Top3,Top4,Top5
+S001,1,1,1,0.5,0.5,0.5,1.0,1.0,Dr. N. Aishwarya,Dr. P. Mathivanan,Dr. Lakshmanan S. A,Dr. Abhishek Jha,Dr. Dev Kunwar Singh Chauhan
+S002,0,0,1,0.0,0.0,0.5,0.25,0.43067655807339306,Dr. C. Ganesh Kumar,Dr. P. Mathivanan,Dr. N. Aishwarya,Dr. V. Thenmozhi,Dr. Abhishek Jha
+S003,0,0,0,0.0,0.0,0.0,0.16666666666666666,0.0,Devanathan B.,Dr. Gorthala Guruprasad,Dr. Rishi Kumar,Dr. C. Ganesh Kumar,Dr. Lakshmanan S. A
+S004,1,1,1,0.5,1.0,1.0,1.0,0.9197207891481876,Dr. P. Mathivanan,Dr. C. Ganesh Kumar,Dr. N. Aishwarya,Dr. Maran Ponnambalam,Dr. Abhishek Jha
+S005,0,1,1,0.0,0.5,0.5,0.3333333333333333,0.5,Dr. Piyush Pratap Singh,A. C. Sakkthi Saranya,Dr. Ravichandran M.,Dr. Sita Devi Bharatula,Venkatakrishnan K S
+S006,0,1,1,0.0,0.5,0.5,0.5,0.6309297535714575,Dr. P. Mathivanan,Dr. Jeyalakshmi S.,Dr. N. Aishwarya,Dr. Muthuselvan. K,Dr. B. Krithika
+S007,0,0,0,0.0,0.0,0.0,0.05555555555555555,0.0,Dr. P. Mathivanan,Dr. Abhishek Jha,Dr. Dev Kunwar Singh Chauhan,Dr. Mahesh Thorat,Dr. Sita Devi Bharatula
+S008,0,1,1,0.0,1.0,1.0,0.5,0.6309297535714575,Dr. Lakshmanan S. A,Dr. Ravichandran M.,Devanathan B.,Dr. Gorthala Guruprasad,Dr. P. Selvaraj
+S009,0,0,0,0.0,0.0,0.0,0.05555555555555555,0.0,Devanathan B.,Dr. P. Mathivanan,Dr. Abhishek Jha,Dr. Lakshmanan S. A,Dr. C. Ganesh Kumar
+S010,0,0,0,0.0,0.0,0.0,0.16666666666666666,0.0,Simhadri Ravishankar,Dr. P. Mathivanan,Dr. N. Aishwarya,Dr. Ravichandran M.,Devanathan B.
+S011,1,1,1,0.5,0.5,0.5,1.0,1.0,Dr. Gayathri M.,Dr. Gorthala Guruprasad,Dr. Ravichandran M.,Dr. N. Aishwarya,Simhadri Ravishankar
+S012,0,0,1,0.0,0.0,0.5,0.2,0.38685280723454163,Dr. Lakshmanan S. A,Dr. P. Mathivanan,Dr. Sita Devi Bharatula,Simhadri Ravishankar,A. C. Sakkthi Saranya
+S013,1,1,1,0.5,0.5,0.5,1.0,1.0,Dr. N. Aishwarya,Devanathan B.,Dr. Gorthala Guruprasad,Dr. P. Selvaraj,Dr. Lakshmanan S. A
+S014,0,0,0,0.0,0.0,0.0,0.03333333333333333,0.0,Venkatakrishnan K S,Dr. V. Thenmozhi,Dr. S. Sweetha,Swathi T. S.,Dr. Sunil Kumar
+S015,1,1,1,0.5,1.0,1.0,1.0,0.9197207891481876,Dr. P. Mathivanan,Dr. C. Ganesh Kumar,Dr. N. Aishwarya,Dr. Lakshmanan S. A,Dr. Maran Ponnambalam
+S016,0,1,1,0.0,0.5,0.5,0.5,0.6309297535714575,Dr. P. Selvaraj,Dr. N. Aishwarya,Dr. Shakti P. Jena,A. C. Sakkthi Saranya,Dr. Rishi Kumar
+S017,1,1,1,0.3333333333333333,0.3333333333333333,0.6666666666666666,1.0,0.8772153153380493,Dr. C. Ganesh Kumar,Dr. N. Aishwarya,Dr. Shubrajit Bhaumik,Dr. Rishi Kumar,Devanathan B.
+S018,1,1,1,0.5,0.5,0.5,1.0,1.0,Dr. Jeyalakshmi S.,Dr. V. Thenmozhi,Dr. S. Sweetha,Swathi T. S.,Dr. Sunil Kumar
+S019,0,0,1,0.0,0.0,0.3333333333333333,0.25,0.43067655807339306,Devanathan B.,Dr. Rishi Kumar,Dr. C. Ganesh Kumar,Dr. Ravichandran M.,Dr. Gorthala Guruprasad
+S020,1,1,1,0.5,0.5,0.5,1.0,1.0,Dr. Sita Devi Bharatula,Dr. Dev Kunwar Singh Chauhan,Dr. C. Ganesh Kumar,Dr. Lakshmanan S. A,Dr. Santosh Ravichandran
+S021,0,0,0,0.0,0.0,0.0,0.05555555555555555,0.0,Dr. Rishi Kumar,Dr. K. Anitha,Dr. Lakshmanan S. A,Venkatakrishnan K S,Dr. V. Thenmozhi
+S022,1,1,1,0.5,0.5,0.5,1.0,1.0,Dr. K. Anitha,Dr. Sita Devi Bharatula,Ayantika Chakraborty,Dr. N. Aishwarya,Dr. Shubrajit Bhaumik
+S023,0,0,0,0.0,0.0,0.0,0.16666666666666666,0.0,Dr. P. Selvaraj,Dr. N. Aishwarya,Dr. Soumyendra Singh,Devanathan B.,Simhadri Ravishankar
+S024,0,0,1,0.0,0.0,0.5,0.2,0.38685280723454163,Dr. S. Shriram,Dr. Damodaran V.,Devanathan B.,A. C. Sakkthi Saranya,Dr. Ravichandran M.
+S025,0,1,1,0.0,0.3333333333333333,1.0,0.3333333333333333,0.6182885020492784,Dr. Maran Ponnambalam,Dr. P. Mathivanan,Dr. N. Aishwarya,Dr. V. Thenmozhi,A. C. Sakkthi Saranya
+S026,0,0,0,0.0,0.0,0.0,0.027777777777777776,0.0,Dr. Jeyalakshmi S.,Devanathan B.,Dr. Gorthala Guruprasad,Dr. P. Selvaraj,Dr. Lakshmanan S. A
+S027,0,0,1,0.0,0.0,0.5,0.25,0.43067655807339306,Dr. Shubrajit Bhaumik,Dr. Lakshmanan S. A,Dr. N. Aishwarya,Dr. Ravichandran M.,Venkatakrishnan K S
+S028,0,0,0,0.0,0.0,0.0,0.03333333333333333,0.0,Dr. Lakshmanan S. A,Dr. Madhulika Srivastava,Dr. P. Selvaraj,Dr. V. Thenmozhi,Venkatakrishnan K S
+S029,0,1,1,0.0,0.5,0.5,0.5,0.6309297535714575,Dr. Abhishek Jha,Dr. Dev Kunwar Singh Chauhan,Dr. P. Mathivanan,Dr. Mahesh Thorat,Dr. Sita Devi Bharatula
+S030,0,1,1,0.0,0.5,0.5,0.5,0.6309297535714575,Dr. P. Mathivanan,Dr. Jeyalakshmi S.,Dr. N. Aishwarya,Simhadri Ravishankar,Dr. Sita Devi Bharatula
