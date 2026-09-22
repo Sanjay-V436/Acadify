@@ -34,6 +34,15 @@ model User {
   passwordHash    String
   name            String
   role            Role
+  bio             String?
+  programme       String?
+  studentId       String?
+  academicInterests String[]
+  careerInterests String[]
+  skills           String[]
+  githubUrl       String?
+  linkedinUrl     String?
+  portfolioUrl    String?
   currentSemester Int?
   departmentId    String?
   department      Department? @relation(fields: [departmentId], references: [id])
@@ -70,10 +79,19 @@ model FacultyProfile {
   user   User   @relation(fields: [userId], references: [id])
 
   designation       String?
+  bio               String?
+  qualification     String?
+  experienceYears   Int?
   researchInterests String[]
   currentResearch   String?
   skills            String[]
   specialization    String?
+  preferredDomains  String[]
+  preferredTechnologies String[]
+  facultyWebpageUrl String?
+  googleScholarUrl  String?
+  orcidUrl          String?
+  linkedinUrl       String?
 
   availableForProjects Boolean @default(true)
   maxStudents          Int     @default(4)

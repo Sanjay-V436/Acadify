@@ -76,12 +76,18 @@ async function main() {
         where: { userId: user.id },
         update: {
           designation,
+          qualification: row.qualification?.trim() || null,
           researchInterests,
+          facultyWebpageUrl: row.profileUrl?.trim() || null,
+          orcidUrl: row.orcid?.trim() || null,
         },
         create: {
           userId: user.id,
           designation,
+          qualification: row.qualification?.trim() || null,
           researchInterests,
+          facultyWebpageUrl: row.profileUrl?.trim() || null,
+          orcidUrl: row.orcid?.trim() || null,
           availableForProjects: true,
           maxStudents: 4,
           currentStudents: 0,
