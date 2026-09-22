@@ -17,9 +17,21 @@ export class UsersService {
     passwordHash: string;
     name: string;
     role: Role;
+    academicInterests: string[];
+    careerInterests: string[];
+    skills: string[];
     departmentId?: string;
     currentSemester?: number;
+    bio?: string;
+    programme?: string;
+    studentId?: string;
+    githubUrl?: string;
+    linkedinUrl?: string;
+    portfolioUrl?: string;
+    classId?: string;
   }) {
-    return this.prisma.user.create({ data });
+    return this.prisma.user.create({
+      data,
+    });
   }
 }

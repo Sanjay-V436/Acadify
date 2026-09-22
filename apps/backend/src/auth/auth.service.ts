@@ -20,12 +20,25 @@ export class AuthService {
     password: string;
     name: string;
     role: Role;
+    academicInterests: string[];
+    careerInterests: string[];
+    skills: string[];
     departmentId?: string;
     currentSemester?: number;
+    bio?: string;
+    programme?: string;
+    studentId?: string;
+    githubUrl?: string;
+    linkedinUrl?: string;
+    portfolioUrl?: string;
+    classId?: string;
   }) {
     const existingUser = await this.usersService.findByEmail(data.email);
+
     if (existingUser) {
-      throw new ConflictException('An account with this email already exists');
+      throw new ConflictException(
+        'An account with this email already exists',
+      );
     }
 
     const passwordHash = await bcrypt.hash(data.password, 10);
@@ -35,8 +48,18 @@ export class AuthService {
       passwordHash,
       name: data.name,
       role: data.role,
+      academicInterests: data.academicInterests,
+      careerInterests: data.careerInterests,
+      skills: data.skills,
       departmentId: data.departmentId,
       currentSemester: data.currentSemester,
+      bio: data.bio,
+      programme: data.programme,
+      studentId: data.studentId,
+      githubUrl: data.githubUrl,
+      linkedinUrl: data.linkedinUrl,
+      portfolioUrl: data.portfolioUrl,
+      classId: data.classId,
     });
 
     return this.generateTokens(user.id, user.email, user.role);
@@ -44,20 +67,37 @@ export class AuthService {
 
   async login(email: string, password: string) {
     const user = await this.usersService.findByEmail(email);
+
     if (!user) {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    const passwordValid = await bcrypt.compare(password, user.passwordHash);
+    const passwordValid = await bcrypt.compare(
+      password,
+      user.passwordHash,
+    );
+
     if (!passwordValid) {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    return this.generateTokens(user.id, user.email, user.role);
+    return this.generateTokens(
+      user.id,
+      user.email,
+      user.role,
+    );
   }
 
-  private async generateTokens(userId: string, email: string, role: Role) {
-    const payload = { sub: userId, email, role };
+  private async generateTokens(
+    userId: string,
+    email: string,
+    role: Role,
+  ) {
+    const payload = {
+      sub: userId,
+      email,
+      role,
+    };
 
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: process.env.JWT_ACCESS_SECRET,
@@ -69,24 +109,39 @@ export class AuthService {
       expiresIn: '7d',
     });
 
-    return { accessToken, refreshToken };
+    return {
+      accessToken,
+      refreshToken,
+    };
   }
+
   async refresh(refreshToken: string) {
-    let payload: { sub: string; email: string; role: Role };
+    let payload: {
+      sub: string;
+      email: string;
+      role: Role;
+    };
 
     try {
       payload = await this.jwtService.verifyAsync(refreshToken, {
         secret: process.env.JWT_REFRESH_SECRET,
       });
     } catch {
-      throw new UnauthorizedException('Invalid or expired refresh token');
+      throw new UnauthorizedException(
+        'Invalid or expired refresh token',
+      );
     }
 
     const user = await this.usersService.findByEmail(payload.email);
+
     if (!user) {
       throw new UnauthorizedException('User no longer exists');
     }
 
-    return this.generateTokens(user.id, user.email, user.role);
+    return this.generateTokens(
+      user.id,
+      user.email,
+      user.role,
+    );
   }
 }

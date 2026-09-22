@@ -8,6 +8,154 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+model User {
+  id                String           @id @default(uuid())
+  email             String           @unique
+  passwordHash      String
+  name              String
+  role              Role
+  currentSemester   Int?
+  departmentId      String?
+  bio               String?
+  programme         String?
+  studentId         String?          @unique
+  academicInterests String[]
+  careerInterests   String[]
+  skills            String[]
+  githubUrl         String?
+  linkedinUrl       String?
+  portfolioUrl      String?
+  classId           String?
+  createdAt         DateTime         @default(now())
+
+  facultyProfile    FacultyProfile?
+  projectsAsStudent ProjectStudent[]
+  uploadedResources Resource[]
+  Class             Class?           @relation(fields: [classId], references: [id])
+  department        Department?      @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+}
+
+model Department {
+  id       String    @id @default(uuid())
+  name     String
+  code     String    @unique
+  Class    Class[]
+  subjects Subject[]
+  students User[]
+}
+
+model Subject {
+  id                 String               @id @default(uuid())
+  name               String
+  code               String               @unique
+  semester           Int
+  departmentId       String
+
+  resources          Resource[]
+  department         Department           @relation(fields: [departmentId], references: [id])
+  TeachingAssignment TeachingAssignment[]
+}
+
+model FacultyProfile {
+  id                    String               @id @default(uuid())
+  userId                String               @unique
+  user                  User                 @relation(fields: [userId], references: [id])
+
+  designation           String?
+  bio                   String?
+  qualification         String?
+  experienceYears       Int?
+  researchInterests     String[]
+  currentResearch       String?
+  skills                String[]
+  specialization        String?
+  preferredDomains      String[]
+  preferredTechnologies String[]
+  facultyWebpageUrl     String?
+  googleScholarUrl      String?
+  orcidUrl              String?
+  linkedinUrl           String?
+
+  availableForProjects  Boolean              @default(true)
+  maxStudents           Int                  @default(4)
+  currentStudents       Int                  @default(0)
+
+  projectsAsMentor      Project[]
+  TeachingAssignment    TeachingAssignment[]
+}
+
+model Project {
+  id                 String           @id @default(uuid())
+  title              String
+  description        String
+  technologies       String[]
+  domain             String
+  status             ProjectStatus    @default(PROPOSED)
+  startDate          DateTime?
+  expectedCompletion DateTime?
+  mentorId           String?
+  githubUrl          String?
+  liveDemoUrl        String?
+  imageUrl           String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  mentor             FacultyProfile?  @relation(fields: [mentorId], references: [id], onDelete: Restrict)
+  students           ProjectStudent[]
+}
+
+model ProjectStudent {
+  id        String  @id @default(uuid())
+  projectId String
+  userId    String
+
+  project   Project @relation(fields: [projectId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@unique([projectId, userId])
+}
+
+model Resource {
+  id           String       @id @default(uuid())
+  title        String
+  fileUrl      String
+  type         ResourceType
+  academicYear String?
+  uploadedById String
+  createdAt    DateTime     @default(now())
+  subjectId    String
+
+  subject      Subject      @relation(fields: [subjectId], references: [id])
+  uploadedBy   User         @relation(fields: [uploadedById], references: [id])
+}
+
+model Class {
+  id                 String               @id
+  departmentId       String
+  batchYear          Int
+  section            String?
+  currentSemester    Int                  @default(1)
+
+  Department         Department           @relation(fields: [departmentId], references: [id])
+  TeachingAssignment TeachingAssignment[]
+  User               User[]
+
+  @@unique([departmentId, batchYear, section])
+}
+
+model TeachingAssignment {
+  id             String         @id
+  classId        String
+  subjectId      String
+  facultyId      String
+
+  Class          Class          @relation(fields: [classId], references: [id])
+  FacultyProfile FacultyProfile @relation(fields: [facultyId], references: [id])
+  Subject        Subject        @relation(fields: [subjectId], references: [id])
+
+  @@unique([classId, subjectId])
+}
+
 enum Role {
   STUDENT
   FACULTY
@@ -26,123 +174,4 @@ enum ResourceType {
   PDF
   PPT
   DOCX
-}
-
-model User {
-  id              String      @id @default(uuid())
-  email           String      @unique
-  passwordHash    String
-  name            String
-  role            Role
-  bio             String?
-  programme       String?
-  studentId       String?
-  academicInterests String[]
-  careerInterests String[]
-  skills           String[]
-  githubUrl       String?
-  linkedinUrl     String?
-  portfolioUrl    String?
-  currentSemester Int?
-  departmentId    String?
-  department      Department? @relation(fields: [departmentId], references: [id])
-  createdAt       DateTime    @default(now())
-
-  facultyProfile    FacultyProfile?
-  uploadedResources Resource[]
-  projectsAsStudent ProjectStudent[]
-}
-
-model Department {
-  id   String @id @default(uuid())
-  name String
-  code String @unique
-
-  subjects Subject[]
-  students User[]
-}
-
-model Subject {
-  id           String     @id @default(uuid())
-  name         String
-  code         String     @unique
-  semester     Int
-  departmentId String
-  department   Department @relation(fields: [departmentId], references: [id])
-
-  resources Resource[]
-}
-
-model FacultyProfile {
-  id     String @id @default(uuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id])
-
-  designation       String?
-  bio               String?
-  qualification     String?
-  experienceYears   Int?
-  researchInterests String[]
-  currentResearch   String?
-  skills            String[]
-  specialization    String?
-  preferredDomains  String[]
-  preferredTechnologies String[]
-  facultyWebpageUrl String?
-  googleScholarUrl  String?
-  orcidUrl          String?
-  linkedinUrl       String?
-
-  availableForProjects Boolean @default(true)
-  maxStudents          Int     @default(4)
-  currentStudents      Int     @default(0)
-
-  projectsAsMentor Project[]
-}
-
-model Project {
-  id                 String        @id @default(uuid())
-  title              String
-  description        String
-  technologies       String[]
-  domain             String
-  status             ProjectStatus @default(PROPOSED)
-  githubUrl          String?
-  liveDemoUrl        String?
-  imageUrl           String?
-  startDate          DateTime?
-  expectedCompletion DateTime?
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-
-  mentorId String?
-  mentor   FacultyProfile? @relation(fields: [mentorId], references: [id])
-
-  students ProjectStudent[]
-}
-
-model ProjectStudent {
-  id        String  @id @default(uuid())
-  projectId String
-  project   Project @relation(fields: [projectId], references: [id])
-  userId    String
-  user      User    @relation(fields: [userId], references: [id])
-
-  @@unique([projectId, userId])
-}
-
-model Resource {
-  id           String       @id @default(uuid())
-  title        String
-  fileUrl      String
-  type         ResourceType
-  academicYear String
-
-  subjectId String
-  subject   Subject @relation(fields: [subjectId], references: [id])
-
-  uploadedById String
-  uploadedBy   User   @relation(fields: [uploadedById], references: [id])
-
-  createdAt DateTime @default(now())
 }

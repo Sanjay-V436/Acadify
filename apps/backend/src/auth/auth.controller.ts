@@ -4,11 +4,14 @@ import {
   Post,
   Get,
   UseGuards,
-  Request as NestRequest,
+  Request as Req,
 } from '@nestjs/common';
+
 import { Request } from 'express';
+
 import { AuthService } from './auth.service';
 import { Role } from '@prisma/client';
+
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { Roles } from './decorators/roles.decorator';
@@ -25,8 +28,18 @@ export class AuthController {
       password: string;
       name: string;
       role: Role;
+      academicInterests: string[];
+      careerInterests: string[];
+      skills: string[];
       departmentId?: string;
       currentSemester?: number;
+      bio?: string;
+      programme?: string;
+      studentId?: string;
+      githubUrl?: string;
+      linkedinUrl?: string;
+      portfolioUrl?: string;
+      classId?: string;
     },
   ) {
     return this.authService.signup(body);
@@ -44,7 +57,9 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  getProfile(@NestRequest() req: Request & { user: unknown }): unknown {
+  getProfile(
+    @Req() req: Request & { user: unknown },
+  ): unknown {
     return req.user;
   }
 
