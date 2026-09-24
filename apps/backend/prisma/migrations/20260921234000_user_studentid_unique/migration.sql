@@ -1,0 +1,1 @@
+-- Index "User_studentId_key" was already created in 20260919090000_profiles

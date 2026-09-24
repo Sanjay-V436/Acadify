@@ -63,6 +63,41 @@ def test_embed(request: EmbedRequest):
     }
 
 
+class FacultyProfileEmbedRequest(BaseModel):
+    faculty_id: str
+    text: str
+
+
+@app.post("/ai/faculty-profile/embed")
+def embed_faculty_profile(request: FacultyProfileEmbedRequest):
+    if not request.text or not request.text.strip():
+        raise HTTPException(status_code=400, detail="text field cannot be empty")
+        
+    try:
+        embedding = model.encode(request.text).tolist()
+        
+        faculty_collection.upsert(
+            ids=[request.faculty_id],
+            documents=[request.text],
+            embeddings=[embedding],
+            metadatas=[{
+                "name": "",
+                "email": "",
+                "designation": "",
+                "research_interests": "",
+                "profile_url": "",
+            }]
+        )
+        return {"status": "ok"}
+    except Exception as e:
+        logger.exception(f"Failed to embed and upsert faculty profile {request.faculty_id}")
+        raise HTTPException(
+            status_code=500,
+            detail="An error occurred while generating or storing the embedding."
+        )
+
+
+
 # ---------------------------------------------------------------------------
 # Mentor Recommendation
 # ---------------------------------------------------------------------------

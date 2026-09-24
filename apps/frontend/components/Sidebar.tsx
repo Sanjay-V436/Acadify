@@ -20,11 +20,13 @@ const navByRole: Record<string, { label: string; href: string }[]> = {
     { label: "Resources", href: "/dashboard/resources" },
   ],
   ADMIN: [
-    { label: "Overview", href: "/dashboard" },
-    { label: "Users", href: "/dashboard/admin/users" },
+    { label: "Dashboard", href: "/dashboard" },
     { label: "Departments", href: "/dashboard/admin/departments" },
+    { label: "Classes", href: "/dashboard/admin/classes" },
     { label: "Subjects", href: "/dashboard/admin/subjects" },
-    { label: "Analytics", href: "/dashboard/admin/analytics" },
+    { label: "Faculty", href: "/dashboard/admin/faculty" },
+    { label: "Students", href: "/dashboard/admin/students" },
+    { label: "Teaching Assignments", href: "/dashboard/admin/teaching-assignments" },
   ],
 };
 
@@ -54,7 +56,7 @@ export default function Sidebar({ user }: { user: DecodedUser }) {
                 href={item.href}
                 className={`flex shrink-0 items-center justify-center rounded-md px-3 py-2 text-xs font-medium transition md:justify-start md:px-4 md:py-2.5 md:text-sm ${
                   active
-                    ? "bg-[#A4123F]/10 text-[#A4123F]"
+                    ? "bg-[#A4123F]/10 text-[#A4123F] font-bold"
                     : "text-[#2B2B2E]/70 hover:bg-[#2B2B2E]/5"
                 }`}
               >
@@ -72,7 +74,7 @@ export default function Sidebar({ user }: { user: DecodedUser }) {
         </p>
         <button
           onClick={handleLogout}
-          className="rounded-md border border-[#A4123F]/30 px-3 py-2 text-xs text-[#A4123F] hover:bg-[#A4123F]/5 md:w-full md:text-sm"
+          className="rounded-md border border-[#A4123F]/30 px-3 py-2 text-xs text-[#A4123F] hover:bg-[#A4123F]/5 md:w-full md:text-sm cursor-pointer"
         >
           Log Out
         </button>

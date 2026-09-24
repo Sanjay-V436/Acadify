@@ -7,6 +7,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { MentorRecommendationModule } from './mentor-recommendation/mentor-recommendation.module';
 import { ProjectsModule } from './projects/projects.module';
 import { ProfilesModule } from './profiles/profiles.module';
+import { AdminModule } from './admin/admin.module';
 @Module({
   imports: [
     AuthModule,
@@ -15,6 +16,7 @@ import { ProfilesModule } from './profiles/profiles.module';
     MentorRecommendationModule,
     ProjectsModule,
     ProfilesModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

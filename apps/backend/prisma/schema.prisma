@@ -29,24 +29,26 @@ enum ResourceType {
 }
 
 model User {
-  id              String      @id @default(uuid())
-  email           String      @unique
-  passwordHash    String
-  name            String
-  role            Role
-  bio             String?
-  programme       String?
-  studentId       String?
+  id                String      @id @default(uuid())
+  email             String      @unique
+  passwordHash      String
+  name              String
+  role              Role
+  bio               String?
+  programme         String?
+  studentId         String?     @unique
   academicInterests String[]
-  careerInterests String[]
-  skills           String[]
-  githubUrl       String?
-  linkedinUrl     String?
-  portfolioUrl    String?
-  currentSemester Int?
-  departmentId    String?
-  department      Department? @relation(fields: [departmentId], references: [id])
-  createdAt       DateTime    @default(now())
+  careerInterests   String[]
+  skills            String[]
+  githubUrl         String?
+  linkedinUrl       String?
+  portfolioUrl      String?
+  currentSemester   Int?
+  departmentId      String?
+  department        Department? @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  classId           String?
+  class             Class?      @relation(fields: [classId], references: [id])
+  createdAt         DateTime    @default(now())
 
   facultyProfile    FacultyProfile?
   uploadedResources Resource[]
@@ -60,6 +62,7 @@ model Department {
 
   subjects Subject[]
   students User[]
+  classes  Class[]
 }
 
 model Subject {
@@ -68,36 +71,64 @@ model Subject {
   code         String     @unique
   semester     Int
   departmentId String
-  department   Department @relation(fields: [departmentId], references: [id])
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Restrict)
 
-  resources Resource[]
+  teachingAssignments TeachingAssignment[]
+  resources           Resource[]
+}
+
+model Class {
+  id              String     @id @default(uuid())
+  departmentId    String
+  department      Department @relation(fields: [departmentId], references: [id])
+  batchYear       Int
+  section         String?
+  currentSemester Int        @default(1)
+
+  students            User[]
+  teachingAssignments TeachingAssignment[]
+
+  @@unique([departmentId, batchYear, section])
+}
+
+model TeachingAssignment {
+  id        String         @id @default(uuid())
+  classId   String
+  class     Class          @relation(fields: [classId], references: [id])
+  subjectId String
+  subject   Subject        @relation(fields: [subjectId], references: [id])
+  facultyId String
+  faculty   FacultyProfile @relation(fields: [facultyId], references: [id])
+
+  @@unique([classId, subjectId])
 }
 
 model FacultyProfile {
   id     String @id @default(uuid())
   userId String @unique
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Restrict)
 
-  designation       String?
-  bio               String?
-  qualification     String?
-  experienceYears   Int?
-  researchInterests String[]
-  currentResearch   String?
-  skills            String[]
-  specialization    String?
-  preferredDomains  String[]
+  designation           String?
+  bio                   String?
+  qualification         String?
+  experienceYears       Int?
+  researchInterests     String[]
+  currentResearch       String?
+  skills                String[]
+  specialization        String?
+  preferredDomains      String[]
   preferredTechnologies String[]
-  facultyWebpageUrl String?
-  googleScholarUrl  String?
-  orcidUrl          String?
-  linkedinUrl       String?
+  facultyWebpageUrl     String?
+  googleScholarUrl      String?
+  orcidUrl              String?
+  linkedinUrl           String?
 
   availableForProjects Boolean @default(true)
   maxStudents          Int     @default(4)
   currentStudents      Int     @default(0)
 
-  projectsAsMentor Project[]
+  projectsAsMentor    Project[]
+  teachingAssignments TeachingAssignment[]
 }
 
 model Project {
@@ -116,7 +147,7 @@ model Project {
   updatedAt          DateTime      @updatedAt
 
   mentorId String?
-  mentor   FacultyProfile? @relation(fields: [mentorId], references: [id])
+  mentor   FacultyProfile? @relation(fields: [mentorId], references: [id], onDelete: Restrict)
 
   students ProjectStudent[]
 }
@@ -124,25 +155,23 @@ model Project {
 model ProjectStudent {
   id        String  @id @default(uuid())
   projectId String
-  project   Project @relation(fields: [projectId], references: [id])
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Restrict)
   userId    String
-  user      User    @relation(fields: [userId], references: [id])
+  user      User    @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@unique([projectId, userId])
 }
 
 model Resource {
-  id           String       @id @default(uuid())
-  title        String
-  fileUrl      String
-  type         ResourceType
-  academicYear String
-
+  id        String       @id @default(uuid())
+  title     String
+  fileUrl   String
+  type      ResourceType
   subjectId String
-  subject   Subject @relation(fields: [subjectId], references: [id])
+  subject   Subject      @relation(fields: [subjectId], references: [id], onDelete: Restrict)
 
   uploadedById String
-  uploadedBy   User   @relation(fields: [uploadedById], references: [id])
+  uploadedBy   User   @relation(fields: [uploadedById], references: [id], onDelete: Restrict)
 
   createdAt DateTime @default(now())
 }

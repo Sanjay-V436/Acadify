@@ -9,6 +9,15 @@ export class UsersService {
   async findByEmail(email: string) {
     return this.prisma.user.findUnique({
       where: { email },
+      include: {
+        department: true,
+        class: {
+          include: {
+            department: true,
+          },
+        },
+        facultyProfile: true,
+      },
     });
   }
 
@@ -18,7 +27,9 @@ export class UsersService {
     name: string;
     role: Role;
     departmentId?: string;
+    classId?: string;
     currentSemester?: number;
+    studentId?: string;
   }) {
     return this.prisma.user.create({ data });
   }

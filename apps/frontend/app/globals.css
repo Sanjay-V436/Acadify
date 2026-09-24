@@ -24,3 +24,15 @@ body {
   color: var(--foreground);
   font-family: var(--font-manrope), sans-serif;
 }
+
+/* Global input text visibility */
+input,
+select,
+textarea {
+  color: #2B2B2E;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(43, 43, 46, 0.4);
+}

@@ -201,6 +201,10 @@ export class ProfilesService {
       throw error;
     }
 
+    if (role === 'FACULTY') {
+      await this.reembedFacultyProfile(userId);
+    }
+
     return this.getMine(userId, role);
   }
 
@@ -251,6 +255,48 @@ export class ProfilesService {
       throw new BadRequestException(
         `${field} must be a valid HTTP or HTTPS URL`,
       );
+    }
+  }
+
+  async reembedFacultyProfile(userId: string) {
+    const profile = await this.prisma.facultyProfile.findUnique({
+      where: { userId },
+      select: {
+        id: true,
+        designation: true,
+        researchInterests: true,
+        currentResearch: true,
+        specialization: true,
+        skills: true,
+        bio: true,
+        qualification: true,
+      },
+    });
+
+    if (!profile) return;
+
+    const combinedText = [
+      profile.designation,
+      profile.qualification,
+      profile.researchInterests?.join(', '),
+      profile.currentResearch,
+      profile.specialization,
+      profile.skills?.join(', '),
+      profile.bio,
+    ]
+      .filter(Boolean)
+      .join('. ');
+
+    try {
+      const aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8001';
+      await fetch(`${aiServiceUrl}/ai/faculty-profile/embed`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ faculty_id: profile.id, text: combinedText }),
+      });
+    } catch (err) {
+      console.error('Failed to re-embed faculty profile:', err);
+      // Don't throw — profile save should succeed even if re-embedding fails
     }
   }
 }

@@ -1,0 +1,402 @@
+{
+  "timestamp": "2026-09-21T15:36:24.975Z",
+  "counts": {
+    "users": 38,
+    "faculty": 36,
+    "departments": 2,
+    "subjects": 3,
+    "projects": 2,
+    "projectStudents": 2,
+    "resources": 0
+  },
+  "users": [
+    {
+      "id": "01ecc42b-73e3-4e5d-a0e5-4992068b6cb2",
+      "email": "g_guruprasad@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "0cad297d-5f3f-4abb-b28d-7c2ca821e176",
+      "email": "c_devsingh@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "1017d9e6-8605-4719-a651-1965365f8f36",
+      "email": "@amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "13981693-1a8e-47eb-8ba7-917492be947c",
+      "email": "c_ganeshkumar@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "240b302c-4c6f-4196-bd2a-a9002e76b2b2",
+      "email": "s_madhulika@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "257df162-19a9-4e25-bce3-b8eaad3bb371",
+      "email": "m_hariharan@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "276c6f9e-6ff0-4e42-801a-e6880b05ec3c",
+      "email": "p_devisowjanya@ch.amrita.edu",
+      "role": "ADMIN"
+    },
+    {
+      "id": "28251a52-70a6-4211-bbd8-5bc0e103b073",
+      "email": "ch.en.u4cce23041@ch.students.amrita.edu",
+      "role": "STUDENT"
+    },
+    {
+      "id": "2b28fc3b-549d-4235-b0f3-25a189b98bdb",
+      "email": "m_ravichandran@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "2e13a53d-8f2f-4f20-8b95-67ecabaff44c",
+      "email": "k_rishi@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "3107bfc5-439f-473e-b3ec-8273fd6cb1df",
+      "email": "s_jeyalakshmi@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "3b4d1065-06c1-4c50-9336-db4413452971",
+      "email": "tm_amirthalakshmi@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "43ac7f7f-356f-4b89-8295-12ab5532345d",
+      "email": "p_priyasharma@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "4b42752b-8c3b-432b-b772-f81f466872d4",
+      "email": "r_simhadri@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "4cf461ee-f293-4434-9df7-550e6f5781c6",
+      "email": "n_aishwarya@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "4db7bcda-06ed-4411-85f2-34bac6f1abd8",
+      "email": "p_jothilakshmi@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "601fc777-74f7-400c-9bb7-8a4ada3e0b0f",
+      "email": "b_sitadevi@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "6ae63fd6-61a5-490e-a77f-7048b1b364ef",
+      "email": "p_maran@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "7203ab70-b924-4387-b944-f31fa0f7f8b5",
+      "email": "test.student@ch.students.amrita.edu",
+      "role": "STUDENT"
+    },
+    {
+      "id": "73abfd5f-e44a-4151-8b6a-9bd87a837333",
+      "email": "b_krithika@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "7ff58f66-4a38-4790-ad36-a8f0895188e1",
+      "email": "r_vaisshale@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "8af8fb0f-c63c-4301-a886-e395059c575a",
+      "email": "k_muthuselvan@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "8c109a7a-fcdd-4b67-a537-106cbb42bd03",
+      "email": "m_gayathri@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "914dafc4-cc19-4fe4-9f01-2e3ae5cccd94",
+      "email": "s_piyushpratap@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "9953734d-eb28-46af-bff6-16f1e3a4c060",
+      "email": "ac_sakkthisaranya@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "aebe9c27-df94-4fcb-9605-8a36aa954205",
+      "email": "m_vignesh@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "c0a7f30a-916a-49b9-8cb4-ab603deafe83",
+      "email": "v_thenmozhi@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "c6d87f3e-8af1-4127-86ef-5e1626c18f56",
+      "email": "s_sweetha@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "d0cad566-55b1-4ed9-8140-e4a00b2d0a7b",
+      "email": "v_damodaran@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "d5865dd8-d565-4830-8c49-81cc5f37840e",
+      "email": "sg_rahul@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "e00ba61a-9ff1-42b8-852c-2305487b6b15",
+      "email": "km_srikant@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "e1291bb7-9d80-405c-8870-9dce89eb623d",
+      "email": "s_mohanapriya@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "e520aa4f-86e4-4fe1-afd9-bd42183e0370",
+      "email": "p_selvaraj@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "efab5810-9495-4263-987d-d87f9d2cdd8a",
+      "email": "g_sanchana@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "f16ed3d2-e6c6-40f7-b28b-1c1244973ff0",
+      "email": "m_ajithkumar@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "f31df671-d54d-44fd-b75e-7c48e4018b35",
+      "email": "m_sathishkumar@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "f6d274cd-0bc1-4f03-8487-250b8e31decc",
+      "email": "p_mathivanan@ch.amrita.edu",
+      "role": "FACULTY"
+    },
+    {
+      "id": "f8741810-30de-4b59-a168-9dfd0ba4ac7b",
+      "email": "k_anitha@ch.amrita.edu",
+      "role": "FACULTY"
+    }
+  ],
+  "faculty": [
+    {
+      "id": "0de7c67e-7ceb-4caa-be62-3c9da953a681",
+      "userId": "43ac7f7f-356f-4b89-8295-12ab5532345d"
+    },
+    {
+      "id": "2d2c3870-23d2-4a64-b298-c4b79937cd3d",
+      "userId": "f16ed3d2-e6c6-40f7-b28b-1c1244973ff0"
+    },
+    {
+      "id": "36210b3a-50a4-4bf5-8e92-d58f1b6f514a",
+      "userId": "7ff58f66-4a38-4790-ad36-a8f0895188e1"
+    },
+    {
+      "id": "3bc874ca-e223-415a-9918-0677e9ce8a2b",
+      "userId": "914dafc4-cc19-4fe4-9f01-2e3ae5cccd94"
+    },
+    {
+      "id": "4f3074ad-b2c5-4a0c-90f9-fefb63457656",
+      "userId": "8c109a7a-fcdd-4b67-a537-106cbb42bd03"
+    },
+    {
+      "id": "5aa4a218-aff9-45fb-b798-66f47bb022bf",
+      "userId": "2b28fc3b-549d-4235-b0f3-25a189b98bdb"
+    },
+    {
+      "id": "61de4c6e-5bfc-450a-968b-259c3bbe642a",
+      "userId": "e520aa4f-86e4-4fe1-afd9-bd42183e0370"
+    },
+    {
+      "id": "63583238-856b-48b5-ab5a-ad776a9de44f",
+      "userId": "f6d274cd-0bc1-4f03-8487-250b8e31decc"
+    },
+    {
+      "id": "659df437-f537-4198-9e66-ddf5838d93cc",
+      "userId": "c0a7f30a-916a-49b9-8cb4-ab603deafe83"
+    },
+    {
+      "id": "66540e57-70bf-49dc-87e7-cad7930070ff",
+      "userId": "2e13a53d-8f2f-4f20-8b95-67ecabaff44c"
+    },
+    {
+      "id": "66d74327-d7bf-4d36-bf14-619f134a5595",
+      "userId": "8af8fb0f-c63c-4301-a886-e395059c575a"
+    },
+    {
+      "id": "6b00139f-afc2-40e3-9f0c-05f3698f2d28",
+      "userId": "aebe9c27-df94-4fcb-9605-8a36aa954205"
+    },
+    {
+      "id": "78ee0f55-0a45-4f7e-ac66-7e095dc60b03",
+      "userId": "efab5810-9495-4263-987d-d87f9d2cdd8a"
+    },
+    {
+      "id": "7b9457d9-e225-4c3a-b130-481dca39fd84",
+      "userId": "4b42752b-8c3b-432b-b772-f81f466872d4"
+    },
+    {
+      "id": "7ca3327f-475f-42c1-bb15-39ce73f59e8d",
+      "userId": "e00ba61a-9ff1-42b8-852c-2305487b6b15"
+    },
+    {
+      "id": "7d6c95e9-b5c7-4d0e-8ecc-1bcb56fb9aeb",
+      "userId": "6ae63fd6-61a5-490e-a77f-7048b1b364ef"
+    },
+    {
+      "id": "82595f7c-280d-416d-93bd-9a2519679555",
+      "userId": "73abfd5f-e44a-4151-8b6a-9bd87a837333"
+    },
+    {
+      "id": "85b33eee-6112-4e22-86ab-a861857d60d4",
+      "userId": "01ecc42b-73e3-4e5d-a0e5-4992068b6cb2"
+    },
+    {
+      "id": "879e3837-c8cf-4fd1-979a-1e2809d6d48c",
+      "userId": "d0cad566-55b1-4ed9-8140-e4a00b2d0a7b"
+    },
+    {
+      "id": "8e302fd0-4215-45c4-9044-7459909e0784",
+      "userId": "f31df671-d54d-44fd-b75e-7c48e4018b35"
+    },
+    {
+      "id": "9215d38d-d219-4a58-94ba-c7ca2255c097",
+      "userId": "9953734d-eb28-46af-bff6-16f1e3a4c060"
+    },
+    {
+      "id": "9dc9d7cb-dc3a-49cc-9e94-3c1da75a9935",
+      "userId": "3107bfc5-439f-473e-b3ec-8273fd6cb1df"
+    },
+    {
+      "id": "bdc60942-6f9d-46a3-a2fb-14bc7ca7f219",
+      "userId": "13981693-1a8e-47eb-8ba7-917492be947c"
+    },
+    {
+      "id": "c3fb3c53-b6f4-4d34-90a2-2ea4c148aa9c",
+      "userId": "0cad297d-5f3f-4abb-b28d-7c2ca821e176"
+    },
+    {
+      "id": "c3fcc090-afcf-4fe9-9542-796ed7ba7898",
+      "userId": "d5865dd8-d565-4830-8c49-81cc5f37840e"
+    },
+    {
+      "id": "c7d78c49-3d57-42e0-99ef-64f501763077",
+      "userId": "601fc777-74f7-400c-9bb7-8a4ada3e0b0f"
+    },
+    {
+      "id": "ca4120b9-25ad-4f72-b2d2-893d7603e83e",
+      "userId": "c6d87f3e-8af1-4127-86ef-5e1626c18f56"
+    },
+    {
+      "id": "cb3c993e-a845-4f27-a54f-2deb7f526a6b",
+      "userId": "f8741810-30de-4b59-a168-9dfd0ba4ac7b"
+    },
+    {
+      "id": "cec471ed-babe-4760-a01a-e18603f94370",
+      "userId": "4cf461ee-f293-4434-9df7-550e6f5781c6"
+    },
+    {
+      "id": "d691e5fe-3288-42b2-98f3-52a0f54e9c5b",
+      "userId": "4db7bcda-06ed-4411-85f2-34bac6f1abd8"
+    },
+    {
+      "id": "db01178c-310e-428c-b97e-ac8908ec019f",
+      "userId": "240b302c-4c6f-4196-bd2a-a9002e76b2b2"
+    },
+    {
+      "id": "f71d33bd-2057-425f-9cec-d7aa7d248ee0",
+      "userId": "1017d9e6-8605-4719-a651-1965365f8f36"
+    },
+    {
+      "id": "f83faa2f-9ed8-4799-85a2-8e4a77486f9b",
+      "userId": "3b4d1065-06c1-4c50-9336-db4413452971"
+    },
+    {
+      "id": "fbd7d906-d787-4f62-9249-14763449c72b",
+      "userId": "276c6f9e-6ff0-4e42-801a-e6880b05ec3c"
+    },
+    {
+      "id": "fcd21719-9968-4095-9e61-99a6648018fa",
+      "userId": "e1291bb7-9d80-405c-8870-9dce89eb623d"
+    },
+    {
+      "id": "fed0b692-eb7a-49a4-8ff0-f1729703d7f5",
+      "userId": "257df162-19a9-4e25-bce3-b8eaad3bb371"
+    }
+  ],
+  "departments": [
+    {
+      "id": "48b0947f-8004-4b06-87b7-8a029bb9b763",
+      "code": "ECE",
+      "name": "Electronics and Communication Engineering"
+    },
+    {
+      "id": "85f13ce5-358e-4ae6-9ae7-4509e31afbb9",
+      "code": "CSE",
+      "name": "Computer Science Engineering"
+    }
+  ],
+  "subjects": [
+    {
+      "id": "70fa0239-0cff-4ab7-ac96-eb1335c5e5bb",
+      "code": "ECE201",
+      "name": "Digital Electronics"
+    },
+    {
+      "id": "c7b10db7-4b93-4ec7-bca5-2a8711ae2a9c",
+      "code": "CSE301",
+      "name": "Database Management Systems"
+    },
+    {
+      "id": "d1ffa9d9-16cf-4295-a4d7-62e8176a596b",
+      "code": "CSE201",
+      "name": "Data Structures"
+    }
+  ],
+  "projects": [
+    {
+      "id": "61076f74-fe06-4f83-b8e4-c392297ef236",
+      "title": "Lab Inventory System"
+    },
+    {
+      "id": "c81052b7-e718-49e6-a4a4-aa1e01e5bb38",
+      "title": "Acadify"
+    }
+  ],
+  "projectStudents": [
+    {
+      "id": "b70acbae-f92a-44c6-9c4d-53924952a958",
+      "projectId": "61076f74-fe06-4f83-b8e4-c392297ef236",
+      "userId": "28251a52-70a6-4211-bbd8-5bc0e103b073"
+    },
+    {
+      "id": "e04e0156-1a74-462f-8d5f-72d824c693ae",
+      "projectId": "c81052b7-e718-49e6-a4a4-aa1e01e5bb38",
+      "userId": "28251a52-70a6-4211-bbd8-5bc0e103b073"
+    }
+  ],
+  "resources": []
+}

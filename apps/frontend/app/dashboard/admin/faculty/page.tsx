@@ -2,39 +2,38 @@
 
 import { useEffect, useState } from "react";
 import {
-  Subject,
+  Faculty,
   Department,
-  getSubjects,
-  createSubject,
-  updateSubject,
-  deleteSubject,
+  getFaculty,
+  createFaculty,
+  updateFaculty,
   getDepartments,
 } from "@/lib/admin-api";
 import Modal from "@/components/ui/Modal";
-import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Toast } from "@/components/ui/Toast";
 
-export default function AdminSubjectsPage() {
-  const [subjects, setSubjects] = useState<Subject[]>([]);
+export default function AdminFacultyPage() {
+  const [faculty, setFaculty] = useState<Faculty[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Filters
   const [selectedDept, setSelectedDept] = useState("");
-  const [selectedSemester, setSelectedSemester] = useState("");
   const [search, setSearch] = useState("");
 
   // Modals
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editItem, setEditItem] = useState<Subject | null>(null);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [editItem, setEditItem] = useState<Faculty | null>(null);
 
   // Form states
   const [name, setName] = useState("");
-  const [code, setCode] = useState("");
-  const [semester, setSemester] = useState<number>(1);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [departmentId, setDepartmentId] = useState("");
+  const [designation, setDesignation] = useState("");
+  const [qualification, setQualification] = useState("");
+  const [specialization, setSpecialization] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   // Toast
@@ -43,18 +42,17 @@ export default function AdminSubjectsPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [subjRes, deptRes] = await Promise.all([
-        getSubjects({
+      const [facRes, deptRes] = await Promise.all([
+        getFaculty({
           departmentId: selectedDept || undefined,
-          semester: selectedSemester || undefined,
           search: search || undefined,
         }),
         getDepartments("", 1, 100),
       ]);
-      setSubjects(subjRes.data);
+      setFaculty(facRes.data);
       setDepartments(deptRes.data);
     } catch (err: any) {
-      setToast({ message: err.message || "Failed to load subjects", type: "error" });
+      setToast({ message: err.message || "Failed to load faculty", type: "error" });
     } finally {
       setLoading(false);
     }
@@ -62,25 +60,28 @@ export default function AdminSubjectsPage() {
 
   useEffect(() => {
     loadData();
-  }, [selectedDept, selectedSemester, search]);
+  }, [selectedDept, search]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !code.trim() || !departmentId || !semester) return;
+    if (!name.trim() || !email.trim() || !password.trim() || !departmentId) return;
     try {
       setSubmitting(true);
-      await createSubject({
+      await createFaculty({
         name: name.trim(),
-        code: code.trim().toUpperCase(),
-        semester: Number(semester),
+        email: email.trim().toLowerCase(),
+        password: password.trim(),
         departmentId,
+        designation: designation.trim() || undefined,
+        qualification: qualification.trim() || undefined,
+        specialization: specialization.trim() || undefined,
       });
-      setToast({ message: "Subject created successfully", type: "success" });
+      setToast({ message: "Faculty member created successfully", type: "success" });
       setIsCreateOpen(false);
       resetForm();
       loadData();
     } catch (err: any) {
-      setToast({ message: err.message || "Failed to create subject", type: "error" });
+      setToast({ message: err.message || "Failed to create faculty member", type: "error" });
     } finally {
       setSubmitting(false);
     }
@@ -88,36 +89,22 @@ export default function AdminSubjectsPage() {
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editItem || !name.trim() || !code.trim() || !departmentId) return;
+    if (!editItem || !name.trim()) return;
     try {
       setSubmitting(true);
-      await updateSubject(editItem.id, {
+      await updateFaculty(editItem.userId, {
         name: name.trim(),
-        code: code.trim().toUpperCase(),
-        semester: Number(semester),
-        departmentId,
+        departmentId: departmentId || undefined,
+        designation: designation.trim() || undefined,
+        qualification: qualification.trim() || undefined,
+        specialization: specialization.trim() || undefined,
       });
-      setToast({ message: "Subject updated successfully", type: "success" });
+      setToast({ message: "Faculty member updated successfully", type: "success" });
       setEditItem(null);
       resetForm();
       loadData();
     } catch (err: any) {
-      setToast({ message: err.message || "Failed to update subject", type: "error" });
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!deleteId) return;
-    try {
-      setSubmitting(true);
-      await deleteSubject(deleteId);
-      setToast({ message: "Subject deleted successfully", type: "success" });
-      setDeleteId(null);
-      loadData();
-    } catch (err: any) {
-      setToast({ message: err.message || "Failed to delete subject", type: "error" });
+      setToast({ message: err.message || "Failed to update faculty member", type: "error" });
     } finally {
       setSubmitting(false);
     }
@@ -125,9 +112,12 @@ export default function AdminSubjectsPage() {
 
   const resetForm = () => {
     setName("");
-    setCode("");
-    setSemester(1);
+    setEmail("");
+    setPassword("");
     setDepartmentId(departments[0]?.id || "");
+    setDesignation("");
+    setQualification("");
+    setSpecialization("");
   };
 
   return (
@@ -136,8 +126,8 @@ export default function AdminSubjectsPage() {
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#2B2B2E]">Subjects</h1>
-          <p className="text-sm text-[#2B2B2E]/70">Manage course subjects, codes, semester levels, and department offerings.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-[#2B2B2E]">Faculty</h1>
+          <p className="text-sm text-[#2B2B2E]/70">Manage teaching staff profiles, designations, and department assignments.</p>
         </div>
         <button
           onClick={() => {
@@ -146,22 +136,22 @@ export default function AdminSubjectsPage() {
           }}
           className="inline-flex items-center justify-center rounded-lg bg-[#A4123F] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#A4123F]/90 cursor-pointer"
         >
-          + Add Subject
+          + Add Faculty Member
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 rounded-xl border border-[#2B2B2E]/10 bg-white p-4 shadow-xs">
-        <div>
-          <label className="block text-xs font-semibold text-[#2B2B2E]/70 mb-1">Search Subject</label>
+      <div className="flex flex-col sm:flex-row items-center gap-4 rounded-xl border border-[#2B2B2E]/10 bg-white p-4 shadow-xs">
+        <div className="w-full sm:w-1/2">
+          <label className="block text-xs font-semibold text-[#2B2B2E]/70 mb-1">Search Faculty</label>
           <input
             type="text"
-            placeholder="Search by code or name..."
+            placeholder="Search by name, email, specialization..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-lg border border-[#2B2B2E]/20 px-3.5 py-2 text-sm text-[#2B2B2E] placeholder-[#2B2B2E]/40 focus:border-[#A4123F] focus:outline-hidden"
           />
         </div>
-        <div>
+        <div className="w-full sm:w-1/2">
           <label className="block text-xs font-semibold text-[#2B2B2E]/70 mb-1">Filter by Department</label>
           <select
             value={selectedDept}
@@ -176,31 +166,17 @@ export default function AdminSubjectsPage() {
             ))}
           </select>
         </div>
-        <div>
-          <label className="block text-xs font-semibold text-[#2B2B2E]/70 mb-1">Filter by Semester</label>
-          <select
-            value={selectedSemester}
-            onChange={(e) => setSelectedSemester(e.target.value)}
-            className="w-full rounded-lg border border-[#2B2B2E]/20 px-3.5 py-2 text-sm text-[#2B2B2E] focus:border-[#A4123F] focus:outline-hidden"
-          >
-            <option value="">All Semesters</option>
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
-              <option key={s} value={s}>
-                Semester {s}
-              </option>
-            ))}
-          </select>
-        </div>
       </div>
 
       <div className="overflow-hidden rounded-xl border border-[#2B2B2E]/10 bg-white shadow-xs">
         <table className="w-full text-left text-sm text-[#2B2B2E]">
           <thead className="border-b border-[#2B2B2E]/10 bg-[#F5F3EF] text-xs uppercase font-semibold text-[#2B2B2E]/70">
             <tr>
-              <th className="px-6 py-3.5">Code</th>
-              <th className="px-6 py-3.5">Subject Name</th>
-              <th className="px-6 py-3.5">Semester</th>
+              <th className="px-6 py-3.5">Name</th>
+              <th className="px-6 py-3.5">Email</th>
               <th className="px-6 py-3.5">Department</th>
+              <th className="px-6 py-3.5">Designation</th>
+              <th className="px-6 py-3.5">Specialization</th>
               <th className="px-6 py-3.5 text-right">Actions</th>
             </tr>
           </thead>
@@ -208,48 +184,42 @@ export default function AdminSubjectsPage() {
             {loading ? (
               Array.from({ length: 4 }).map((_, i) => (
                 <tr key={i}>
-                  <td className="px-6 py-4"><Skeleton className="h-4 w-16" /></td>
-                  <td className="px-6 py-4"><Skeleton className="h-4 w-48" /></td>
-                  <td className="px-6 py-4"><Skeleton className="h-4 w-12" /></td>
-                  <td className="px-6 py-4"><Skeleton className="h-4 w-24" /></td>
-                  <td className="px-6 py-4 text-right"><Skeleton className="ml-auto h-4 w-20" /></td>
+                  <td className="px-6 py-4"><Skeleton className="h-4 w-36" /></td>
+                  <td className="px-6 py-4"><Skeleton className="h-4 w-44" /></td>
+                  <td className="px-6 py-4"><Skeleton className="h-4 w-20" /></td>
+                  <td className="px-6 py-4"><Skeleton className="h-4 w-28" /></td>
+                  <td className="px-6 py-4"><Skeleton className="h-4 w-32" /></td>
+                  <td className="px-6 py-4 text-right"><Skeleton className="ml-auto h-4 w-12" /></td>
                 </tr>
               ))
-            ) : subjects.length === 0 ? (
+            ) : faculty.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-8 text-center text-sm text-[#2B2B2E]/50">
-                  No subjects found.
+                <td colSpan={6} className="px-6 py-8 text-center text-sm text-[#2B2B2E]/50">
+                  No faculty members found.
                 </td>
               </tr>
             ) : (
-              subjects.map((subj) => (
-                <tr key={subj.id} className="hover:bg-[#F5F3EF]/50 transition-colors">
-                  <td className="px-6 py-4 font-mono font-bold text-[#A4123F]">{subj.code}</td>
-                  <td className="px-6 py-4 font-medium">{subj.name}</td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center rounded-full bg-[#E8A33D]/15 px-2.5 py-0.5 text-xs font-semibold text-[#2B2B2E]">
-                      Sem {subj.semester}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 font-semibold text-[#2B2B2E]/80">{subj.department?.code}</td>
-                  <td className="px-6 py-4 text-right space-x-2">
+              faculty.map((f) => (
+                <tr key={f.userId} className="hover:bg-[#F5F3EF]/50 transition-colors">
+                  <td className="px-6 py-4 font-semibold text-[#2B2B2E]">{f.name}</td>
+                  <td className="px-6 py-4 text-[#2B2B2E]/70 font-mono text-xs">{f.email}</td>
+                  <td className="px-6 py-4 font-bold text-[#A4123F]">{f.department?.code || "—"}</td>
+                  <td className="px-6 py-4 text-[#2B2B2E]/80">{f.profile?.designation || "Faculty"}</td>
+                  <td className="px-6 py-4 text-[#2B2B2E]/70">{f.profile?.specialization || "General"}</td>
+                  <td className="px-6 py-4 text-right">
                     <button
                       onClick={() => {
-                        setEditItem(subj);
-                        setName(subj.name);
-                        setCode(subj.code);
-                        setSemester(subj.semester);
-                        setDepartmentId(subj.departmentId);
+                        setEditItem(f);
+                        setName(f.name);
+                        setEmail(f.email);
+                        setDepartmentId(f.departmentId || "");
+                        setDesignation(f.profile?.designation || "");
+                        setQualification(f.profile?.qualification || "");
+                        setSpecialization(f.profile?.specialization || "");
                       }}
                       className="text-xs font-semibold text-[#A4123F] hover:underline cursor-pointer"
                     >
                       Edit
-                    </button>
-                    <button
-                      onClick={() => setDeleteId(subj.id)}
-                      className="text-xs font-semibold text-red-600 hover:underline cursor-pointer"
-                    >
-                      Delete
                     </button>
                   </td>
                 </tr>
@@ -260,29 +230,42 @@ export default function AdminSubjectsPage() {
       </div>
 
       {/* Create Modal */}
-      <Modal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} title="Add New Subject">
+      <Modal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} title="Add New Faculty Member">
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-[#2B2B2E] uppercase">Subject Code</label>
+            <label className="block text-xs font-semibold text-[#2B2B2E] uppercase">Full Name</label>
             <input
               type="text"
               required
-              placeholder="e.g. CS101"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-[#2B2B2E]/20 px-3.5 py-2 text-sm focus:border-[#A4123F] focus:outline-hidden"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-[#2B2B2E] uppercase">Subject Name</label>
-            <input
-              type="text"
-              required
-              placeholder="e.g. Data Structures & Algorithms"
+              placeholder="e.g. Dr. Alan Turing"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="mt-1 w-full rounded-lg border border-[#2B2B2E]/20 px-3.5 py-2 text-sm focus:border-[#A4123F] focus:outline-hidden"
             />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-[#2B2B2E] uppercase">Email</label>
+              <input
+                type="email"
+                required
+                placeholder="alan@university.edu"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-[#2B2B2E]/20 px-3.5 py-2 text-sm focus:border-[#A4123F] focus:outline-hidden"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#2B2B2E] uppercase">Password</label>
+              <input
+                type="password"
+                required
+                placeholder="Initial password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-[#2B2B2E]/20 px-3.5 py-2 text-sm focus:border-[#A4123F] focus:outline-hidden"
+              />
+            </div>
           </div>
           <div>
             <label className="block text-xs font-semibold text-[#2B2B2E] uppercase">Department</label>
@@ -300,17 +283,27 @@ export default function AdminSubjectsPage() {
               ))}
             </select>
           </div>
-          <div>
-            <label className="block text-xs font-semibold text-[#2B2B2E] uppercase">Semester Level (1-8)</label>
-            <input
-              type="number"
-              min={1}
-              max={8}
-              required
-              value={semester}
-              onChange={(e) => setSemester(Number(e.target.value))}
-              className="mt-1 w-full rounded-lg border border-[#2B2B2E]/20 px-3.5 py-2 text-sm focus:border-[#A4123F] focus:outline-hidden"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-[#2B2B2E] uppercase">Designation</label>
+              <input
+                type="text"
+                placeholder="e.g. Associate Professor"
+                value={designation}
+                onChange={(e) => setDesignation(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-[#2B2B2E]/20 px-3.5 py-2 text-sm focus:border-[#A4123F] focus:outline-hidden"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#2B2B2E] uppercase">Specialization</label>
+              <input
+                type="text"
+                placeholder="e.g. Artificial Intelligence"
+                value={specialization}
+                onChange={(e) => setSpecialization(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-[#2B2B2E]/20 px-3.5 py-2 text-sm focus:border-[#A4123F] focus:outline-hidden"
+              />
+            </div>
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <button
@@ -332,20 +325,10 @@ export default function AdminSubjectsPage() {
       </Modal>
 
       {/* Edit Modal */}
-      <Modal isOpen={!!editItem} onClose={() => setEditItem(null)} title="Edit Subject">
+      <Modal isOpen={!!editItem} onClose={() => setEditItem(null)} title="Edit Faculty Profile">
         <form onSubmit={handleUpdate} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-[#2B2B2E] uppercase">Subject Code</label>
-            <input
-              type="text"
-              required
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-[#2B2B2E]/20 px-3.5 py-2 text-sm focus:border-[#A4123F] focus:outline-hidden"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-[#2B2B2E] uppercase">Subject Name</label>
+            <label className="block text-xs font-semibold text-[#2B2B2E] uppercase">Full Name</label>
             <input
               type="text"
               required
@@ -369,17 +352,25 @@ export default function AdminSubjectsPage() {
               ))}
             </select>
           </div>
-          <div>
-            <label className="block text-xs font-semibold text-[#2B2B2E] uppercase">Semester Level (1-8)</label>
-            <input
-              type="number"
-              min={1}
-              max={8}
-              required
-              value={semester}
-              onChange={(e) => setSemester(Number(e.target.value))}
-              className="mt-1 w-full rounded-lg border border-[#2B2B2E]/20 px-3.5 py-2 text-sm focus:border-[#A4123F] focus:outline-hidden"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-[#2B2B2E] uppercase">Designation</label>
+              <input
+                type="text"
+                value={designation}
+                onChange={(e) => setDesignation(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-[#2B2B2E]/20 px-3.5 py-2 text-sm focus:border-[#A4123F] focus:outline-hidden"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#2B2B2E] uppercase">Specialization</label>
+              <input
+                type="text"
+                value={specialization}
+                onChange={(e) => setSpecialization(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-[#2B2B2E]/20 px-3.5 py-2 text-sm focus:border-[#A4123F] focus:outline-hidden"
+              />
+            </div>
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <button
@@ -399,15 +390,6 @@ export default function AdminSubjectsPage() {
           </div>
         </form>
       </Modal>
-
-      {/* Delete Confirmation */}
-      <ConfirmDialog
-        isOpen={!!deleteId}
-        onClose={() => setDeleteId(null)}
-        onConfirm={handleDelete}
-        title="Delete Subject"
-        message="Are you sure you want to delete this subject? Teaching assignments linked to this subject will also be removed."
-      />
     </div>
   );
 }
