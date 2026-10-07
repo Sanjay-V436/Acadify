@@ -47,11 +47,13 @@ type Profile = {
     availableForProjects: boolean;
     maxStudents: number;
     currentStudents: number;
+    availableSlots?: number;
     facultyWebpageUrl?: string | null;
     googleScholarUrl?: string | null;
     orcidUrl?: string | null;
     linkedinUrl?: string | null;
   } | null;
+  availableSlots?: number;
 };
 
 type EditForm = Record<string, string | number | boolean | string[]>;
@@ -112,7 +114,8 @@ export default function ProfilePage() {
       preferredDomains: faculty?.preferredDomains ?? [],
       preferredTechnologies: faculty?.preferredTechnologies ?? [],
       availableForProjects: faculty?.availableForProjects ?? true,
-      maxStudents: faculty?.maxStudents ?? 4,
+      maxStudents: faculty?.maxStudents ?? 5,
+      currentStudents: faculty?.currentStudents ?? 0,
       facultyWebpageUrl: faculty?.facultyWebpageUrl ?? "",
       googleScholarUrl: faculty?.googleScholarUrl ?? "",
       orcidUrl: faculty?.orcidUrl ?? "",
@@ -125,9 +128,23 @@ export default function ProfilePage() {
 
   async function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSaving(true);
     setError("");
     setSuccess("");
+
+    if (profile?.role === "FACULTY") {
+      const max = Number(form.maxStudents ?? 5);
+      const current = Number(form.currentStudents ?? 0);
+      if (max < 0 || current < 0) {
+        setError("Student counts must be non-negative.");
+        return;
+      }
+      if (current > max) {
+        setError("Currently mentoring students cannot exceed maximum students.");
+        return;
+      }
+    }
+
+    setSaving(true);
     try {
       const payload: Record<string, unknown> = {
         ...form,
@@ -271,24 +288,22 @@ export default function ProfilePage() {
           </Section>
           {isFaculty ? (
             <>
-              <Section title="Mentoring">
-                <div className="grid gap-5 sm:grid-cols-3">
-                  <Detail
-                    label="Availability"
-                    value={
-                      faculty.availableForProjects
-                        ? "Available for mentoring"
-                        : "Not currently available"
-                    }
-                  />
-                  <Detail
-                    label="Capacity"
-                    value={`${faculty.currentStudents} of ${faculty.maxStudents} students`}
-                  />
+              <MentorAvailabilitySection
+                faculty={faculty}
+                onUpdateSuccess={(updated) => setProfile(updated)}
+              />
+              <Section title="Mentoring details">
+                <div className="grid gap-5 sm:grid-cols-2">
                   <Detail
                     label="Preferred areas"
                     value={
                       faculty.preferredDomains.join(", ") || "Not specified"
+                    }
+                  />
+                  <Detail
+                    label="Preferred technologies"
+                    value={
+                      faculty.preferredTechnologies.join(", ") || "Not specified"
                     }
                   />
                 </div>
@@ -359,6 +374,292 @@ export default function ProfilePage() {
         />
       )}
     </div>
+  );
+}
+
+function MentorAvailabilitySection({
+  faculty,
+  onUpdateSuccess,
+}: {
+  faculty: NonNullable<Profile["facultyProfile"]>;
+  onUpdateSuccess: (updatedProfile: Profile) => void;
+}) {
+  const [form, setForm] = useState<{
+    availableForProjects: boolean;
+    maxStudents: number | "";
+    currentStudents: number | "";
+  }>({
+    availableForProjects: faculty.availableForProjects ?? true,
+    maxStudents: faculty.maxStudents ?? 5,
+    currentStudents: faculty.currentStudents ?? 0,
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  useEffect(() => {
+    setForm({
+      availableForProjects: faculty.availableForProjects ?? true,
+      maxStudents: faculty.maxStudents ?? 5,
+      currentStudents: faculty.currentStudents ?? 0,
+    });
+  }, [
+    faculty.availableForProjects,
+    faculty.maxStudents,
+    faculty.currentStudents,
+  ]);
+
+  const maxVal =
+    form.maxStudents === "" ? NaN : Number(form.maxStudents);
+  const currentVal =
+    form.currentStudents === "" ? NaN : Number(form.currentStudents);
+
+  const availableSlots =
+    !isNaN(maxVal) && !isNaN(currentVal)
+      ? Math.max(0, maxVal - currentVal)
+      : 0;
+
+  const isExceedingMax =
+    !isNaN(maxVal) && !isNaN(currentVal) && currentVal > maxVal;
+
+  async function handleSave(e: FormEvent) {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    if (isNaN(maxVal) || maxVal < 0) {
+      setError("Maximum students must be a non-negative number.");
+      return;
+    }
+    if (isNaN(currentVal) || currentVal < 0) {
+      setError("Currently mentoring students must be a non-negative number.");
+      return;
+    }
+    if (currentVal > maxVal) {
+      setError("Currently mentoring students cannot exceed maximum students.");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const response = await authFetch("/profiles/me", {
+        method: "PATCH",
+        body: JSON.stringify({
+          availableForProjects: Boolean(form.availableForProjects),
+          maxStudents: maxVal,
+          currentStudents: currentVal,
+        }),
+      });
+      if (!response.ok) throw new Error(await readError(response));
+      const updated = (await response.json()) as Profile;
+      onUpdateSuccess(updated);
+      setSuccess("Mentor availability saved successfully.");
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to update mentor availability.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <section className="rounded-2xl border border-[#2B2B2E]/10 bg-white p-6 shadow-sm">
+      <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+        <div>
+          <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-[#A4123F]">
+            MENTOR AVAILABILITY
+          </h2>
+          <p className="mt-1 text-xs text-[#2B2B2E]/60">
+            Configure student capacity limits and availability for academic mentorship.
+          </p>
+        </div>
+        <div className="inline-flex items-center gap-2 rounded-full bg-[#F5F3EF] px-3 py-1 text-xs font-bold text-[#2B2B2E]/70">
+          <span
+            className={`h-2 w-2 rounded-full ${
+              form.availableForProjects && availableSlots > 0
+                ? "bg-emerald-500"
+                : "bg-[#A4123F]"
+            }`}
+          />
+          {form.availableForProjects
+            ? `${availableSlots} slot${availableSlots === 1 ? "" : "s"} open`
+            : "Mentorship paused"}
+        </div>
+      </div>
+
+      <form onSubmit={handleSave} className="mt-6 space-y-6">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Accepting New Projects */}
+          <div className="flex flex-col justify-between rounded-xl border border-[#2B2B2E]/10 bg-[#FAFAF8] p-4">
+            <div>
+              <label className="text-xs font-bold uppercase tracking-wider text-[#2B2B2E]/60">
+                Accepting New Projects
+              </label>
+              <p className="mt-1 text-[11px] text-[#2B2B2E]/50">
+                Toggle to accept or pause incoming projects
+              </p>
+            </div>
+            <div className="mt-4 flex items-center gap-3">
+              <button
+                type="button"
+                id="toggle-accepting-projects"
+                onClick={() =>
+                  setForm((prev) => ({
+                    ...prev,
+                    availableForProjects: !prev.availableForProjects,
+                  }))
+                }
+                className={`relative inline-flex h-8 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#A4123F]/25 ${
+                  form.availableForProjects ? "bg-[#A4123F]" : "bg-[#2B2B2E]/25"
+                }`}
+                role="switch"
+                aria-checked={form.availableForProjects}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-7 w-7 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                    form.availableForProjects
+                      ? "translate-x-6"
+                      : "translate-x-0"
+                  }`}
+                />
+              </button>
+              <span
+                className={`text-sm font-extrabold tracking-wide ${
+                  form.availableForProjects
+                    ? "text-[#A4123F]"
+                    : "text-[#2B2B2E]/45"
+                }`}
+              >
+                {form.availableForProjects ? "ON" : "OFF"}
+              </span>
+            </div>
+          </div>
+
+          {/* Maximum Students */}
+          <div className="flex flex-col justify-between rounded-xl border border-[#2B2B2E]/10 bg-[#FAFAF8] p-4">
+            <div>
+              <label
+                htmlFor="max-students-input"
+                className="text-xs font-bold uppercase tracking-wider text-[#2B2B2E]/60"
+              >
+                Maximum Students
+              </label>
+              <p className="mt-1 text-[11px] text-[#2B2B2E]/50">
+                Recommended range: 0–20
+              </p>
+            </div>
+            <div className="mt-3">
+              <input
+                id="max-students-input"
+                type="number"
+                min={0}
+                max={20}
+                value={form.maxStudents}
+                onChange={(e) => {
+                  const val =
+                    e.target.value === "" ? "" : Number(e.target.value);
+                  setForm((prev) => ({ ...prev, maxStudents: val }));
+                }}
+                className="w-full rounded-xl border border-[#2B2B2E]/15 bg-white px-3.5 py-2 text-base font-bold text-[#2B2B2E] outline-none transition focus:border-[#A4123F] focus:ring-2 focus:ring-[#A4123F]/20"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Currently Mentoring Students */}
+          <div className="flex flex-col justify-between rounded-xl border border-[#2B2B2E]/10 bg-[#FAFAF8] p-4">
+            <div>
+              <label
+                htmlFor="current-students-input"
+                className="text-xs font-bold uppercase tracking-wider text-[#2B2B2E]/60"
+              >
+                Currently Mentoring Students
+              </label>
+              <p className="mt-1 text-[11px] text-[#2B2B2E]/50">
+                Recommended range: 0–20
+              </p>
+            </div>
+            <div className="mt-3">
+              <input
+                id="current-students-input"
+                type="number"
+                min={0}
+                max={20}
+                value={form.currentStudents}
+                onChange={(e) => {
+                  const val =
+                    e.target.value === "" ? "" : Number(e.target.value);
+                  setForm((prev) => ({ ...prev, currentStudents: val }));
+                }}
+                className={`w-full rounded-xl border bg-white px-3.5 py-2 text-base font-bold text-[#2B2B2E] outline-none transition focus:ring-2 ${
+                  isExceedingMax
+                    ? "border-red-500 focus:border-red-500 focus:ring-red-200"
+                    : "border-[#2B2B2E]/15 focus:border-[#A4123F] focus:ring-[#A4123F]/20"
+                }`}
+                required
+              />
+            </div>
+          </div>
+
+          {/* Available Slots [READ ONLY] */}
+          <div className="flex flex-col justify-between rounded-xl border border-[#2B2B2E]/10 bg-[#F5F3EF] p-4">
+            <div>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold uppercase tracking-wider text-[#2B2B2E]/60">
+                  Available Slots
+                </label>
+                <span className="rounded bg-[#2B2B2E]/10 px-1.5 py-0.5 text-[9px] font-extrabold uppercase text-[#2B2B2E]/70">
+                  READ ONLY
+                </span>
+              </div>
+              <p className="mt-1 text-[11px] text-[#2B2B2E]/50">
+                Calculated (Max − Currently Mentoring)
+              </p>
+            </div>
+            <div className="mt-3 flex items-baseline gap-1">
+              <span className="font-(--font-display) text-3xl font-extrabold text-[#2B2B2E]">
+                {availableSlots}
+              </span>
+              <span className="text-xs font-semibold text-[#2B2B2E]/50">
+                / {!isNaN(maxVal) ? maxVal : 0} slots
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {isExceedingMax && (
+          <p className="rounded-lg bg-red-50 px-4 py-2 text-xs font-semibold text-red-600">
+            Currently mentoring students cannot exceed maximum students.
+          </p>
+        )}
+
+        {error && (
+          <p className="rounded-lg bg-red-50 px-4 py-2 text-xs font-semibold text-red-600">
+            {error}
+          </p>
+        )}
+
+        {success && (
+          <p className="rounded-lg bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700">
+            {success}
+          </p>
+        )}
+
+        <div className="flex justify-end pt-1">
+          <button
+            type="submit"
+            id="save-availability-btn"
+            disabled={saving || isExceedingMax}
+            className="rounded-xl bg-[#A4123F] px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-[#8D0F36] focus:outline-none focus:ring-2 focus:ring-[#A4123F]/25 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {saving ? "Saving Changes..." : "Save Changes"}
+          </button>
+        </div>
+      </form>
+    </section>
   );
 }
 
@@ -482,17 +783,73 @@ function EditModal({
                   onChange={(items) => update("preferredTechnologies", items)}
                 />
               </div>
-              <label className="flex items-center gap-3 text-sm font-semibold text-[#2B2B2E]">
-                <input
-                  type="checkbox"
-                  checked={Boolean(form.availableForProjects)}
-                  onChange={(event) =>
-                    update("availableForProjects", event.target.checked)
-                  }
-                  className="h-4 w-4 accent-[#A4123F]"
-                />
-                Available for mentoring
-              </label>
+              <div className="rounded-xl border border-[#2B2B2E]/10 bg-[#FAFAF8] p-5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold uppercase tracking-wider text-[#A4123F]">
+                    Mentor Availability
+                  </p>
+                  <label className="flex items-center gap-2.5 text-xs font-bold text-[#2B2B2E]">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(form.availableForProjects)}
+                      onChange={(event) =>
+                        update("availableForProjects", event.target.checked)
+                      }
+                      className="h-4 w-4 accent-[#A4123F]"
+                    />
+                    Accepting New Projects
+                  </label>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div>
+                    <label className="text-xs font-bold text-[#2B2B2E]/70">
+                      Maximum Students (0–20)
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={20}
+                      value={String(form.maxStudents ?? 5)}
+                      onChange={(e) => update("maxStudents", Number(e.target.value))}
+                      className="mt-1 w-full rounded-xl border border-[#2B2B2E]/15 bg-white px-3.5 py-2 text-sm font-bold text-[#2B2B2E] outline-none transition focus:border-[#A4123F] focus:ring-2 focus:ring-[#A4123F]/20"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-[#2B2B2E]/70">
+                      Currently Mentoring (0–20)
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={20}
+                      value={String(form.currentStudents ?? 0)}
+                      onChange={(e) => update("currentStudents", Number(e.target.value))}
+                      className="mt-1 w-full rounded-xl border border-[#2B2B2E]/15 bg-white px-3.5 py-2 text-sm font-bold text-[#2B2B2E] outline-none transition focus:border-[#A4123F] focus:ring-2 focus:ring-[#A4123F]/20"
+                    />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-[#2B2B2E]/70">
+                        Available Slots
+                      </label>
+                      <span className="rounded bg-[#2B2B2E]/10 px-1 py-0.5 text-[9px] font-bold uppercase text-[#2B2B2E]/60">
+                        Read Only
+                      </span>
+                    </div>
+                    <div className="mt-1 flex h-[38px] items-center rounded-xl border border-[#2B2B2E]/10 bg-[#F5F3EF] px-3.5 text-sm font-extrabold text-[#2B2B2E]">
+                      {Math.max(
+                        0,
+                        Number(form.maxStudents ?? 5) - Number(form.currentStudents ?? 0)
+                      )}
+                    </div>
+                  </div>
+                </div>
+                {Number(form.currentStudents ?? 0) > Number(form.maxStudents ?? 5) && (
+                  <p className="text-xs font-semibold text-red-600">
+                    Currently mentoring students cannot exceed maximum students.
+                  </p>
+                )}
+              </div>
             </>
           ) : (
             <>

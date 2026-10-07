@@ -22,6 +22,7 @@ export interface UpdateProfileInput {
   experienceYears?: unknown;
   currentResearch?: unknown;
   researchInterests?: unknown;
+  publications?: unknown;
   specialization?: unknown;
   preferredDomains?: unknown;
   preferredTechnologies?: unknown;
@@ -30,6 +31,7 @@ export interface UpdateProfileInput {
   orcidUrl?: unknown;
   availableForProjects?: unknown;
   maxStudents?: unknown;
+  currentStudents?: unknown;
 }
 
 const userSelect = {
@@ -73,6 +75,7 @@ const userSelect = {
       qualification: true,
       experienceYears: true,
       researchInterests: true,
+      publications: true,
       currentResearch: true,
       skills: true,
       specialization: true,
@@ -104,8 +107,21 @@ export class ProfilesService {
       throw new NotFoundException('Faculty profile not found');
     }
 
+    const facultyProfile = user.facultyProfile
+      ? {
+          ...user.facultyProfile,
+          availableSlots: Math.max(
+            0,
+            (user.facultyProfile.maxStudents ?? 0) -
+              (user.facultyProfile.currentStudents ?? 0),
+          ),
+        }
+      : null;
+
     return {
       ...user,
+      facultyProfile,
+      availableSlots: facultyProfile?.availableSlots,
       projects: user.projectsAsStudent.map((item) => item.project),
       projectsAsStudent: undefined,
     };
@@ -136,6 +152,7 @@ export class ProfilesService {
       this.setText(facultyData, input.currentResearch, 'currentResearch');
       this.setText(facultyData, input.specialization, 'specialization');
       this.setList(facultyData, input.researchInterests, 'researchInterests');
+      this.setList(facultyData, input.publications, 'publications');
       this.setList(facultyData, input.skills, 'skills');
       this.setList(facultyData, input.preferredDomains, 'preferredDomains');
       this.setList(
@@ -169,11 +186,48 @@ export class ProfilesService {
           throw new BadRequestException('availableForProjects must be boolean');
         facultyData.availableForProjects = input.availableForProjects;
       }
-      if (input.maxStudents !== undefined)
-        facultyData.maxStudents = this.integer(
-          input.maxStudents,
-          'maxStudents',
-        );
+
+      if (
+        input.maxStudents !== undefined ||
+        input.currentStudents !== undefined
+      ) {
+        let existingProfile: {
+          maxStudents: number;
+          currentStudents: number;
+        } | null = null;
+        if (
+          input.maxStudents === undefined ||
+          input.currentStudents === undefined
+        ) {
+          existingProfile = await this.prisma.facultyProfile.findUnique({
+            where: { userId },
+            select: { maxStudents: true, currentStudents: true },
+          });
+        }
+
+        const effectiveMax =
+          input.maxStudents !== undefined
+            ? this.integer(input.maxStudents, 'maxStudents')
+            : (existingProfile?.maxStudents ?? 0);
+
+        const effectiveCurrent =
+          input.currentStudents !== undefined
+            ? this.integer(input.currentStudents, 'currentStudents')
+            : (existingProfile?.currentStudents ?? 0);
+
+        if (effectiveCurrent > effectiveMax) {
+          throw new BadRequestException(
+            'Currently mentoring students cannot exceed maximum students',
+          );
+        }
+
+        if (input.maxStudents !== undefined) {
+          facultyData.maxStudents = effectiveMax;
+        }
+        if (input.currentStudents !== undefined) {
+          facultyData.currentStudents = effectiveCurrent;
+        }
+      }
     }
 
     try {
@@ -201,7 +255,21 @@ export class ProfilesService {
       throw error;
     }
 
-    if (role === 'FACULTY') {
+    const hasSemanticUserChanges = Object.keys(userData).length > 0;
+    const availabilityKeys = new Set([
+      'availableForProjects',
+      'maxStudents',
+      'currentStudents',
+    ]);
+    const hasSemanticFacultyChanges = Object.keys(facultyData).some(
+      (key) => !availabilityKeys.has(key),
+    );
+
+    const shouldReembed =
+      role === 'FACULTY' &&
+      (hasSemanticUserChanges || hasSemanticFacultyChanges);
+
+    if (shouldReembed) {
       await this.reembedFacultyProfile(userId);
     }
 
@@ -265,11 +333,28 @@ export class ProfilesService {
         id: true,
         designation: true,
         researchInterests: true,
+        publications: true,
         currentResearch: true,
         specialization: true,
         skills: true,
         bio: true,
         qualification: true,
+        facultyWebpageUrl: true,
+        orcidUrl: true,
+        availableForProjects: true,
+        maxStudents: true,
+        currentStudents: true,
+        user: {
+          select: {
+            name: true,
+            email: true,
+            department: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -283,6 +368,7 @@ export class ProfilesService {
       profile.specialization,
       profile.skills?.join(', '),
       profile.bio,
+      profile.publications?.slice(0, 10).join('. '),
     ]
       .filter(Boolean)
       .join('. ');
@@ -292,7 +378,24 @@ export class ProfilesService {
       await fetch(`${aiServiceUrl}/ai/faculty-profile/embed`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ faculty_id: profile.id, text: combinedText }),
+        body: JSON.stringify({
+          faculty_id: profile.id,
+          text: combinedText,
+          metadata: {
+            name: profile.user?.name || '',
+            email: profile.user?.email || '',
+            department: profile.user?.department?.name || '',
+            designation: profile.designation || '',
+            qualification: profile.qualification || '',
+            research_interests: profile.researchInterests?.join(', ') || '',
+            publications: profile.publications?.join(' | ') || '',
+            orcid: profile.orcidUrl || '',
+            profile_url: profile.facultyWebpageUrl || '',
+            available_for_projects: profile.availableForProjects,
+            max_students: profile.maxStudents,
+            current_students: profile.currentStudents,
+          },
+        }),
       });
     } catch (err) {
       console.error('Failed to re-embed faculty profile:', err);

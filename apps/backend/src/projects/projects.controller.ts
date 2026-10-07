@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -26,21 +27,49 @@ type AuthenticatedRequest = Request & {
 
 @Controller('projects')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.STUDENT)
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
+  @Get('community')
+  @Roles(Role.STUDENT, Role.FACULTY, Role.ADMIN)
+  findCommunity(
+    @Query('search') search?: string,
+    @Query('domain') domain?: string,
+    @Query('tech') tech?: string,
+    @Query('status') status?: string,
+    @Query('departmentId') departmentId?: string,
+    @Query('sort') sort?: string,
+  ) {
+    return this.projectsService.findCommunity({
+      search,
+      domain,
+      tech,
+      status,
+      departmentId,
+      sort,
+    });
+  }
+
+  @Get('community/meta')
+  @Roles(Role.STUDENT, Role.FACULTY, Role.ADMIN)
+  getCommunityMetadata() {
+    return this.projectsService.getCommunityMetadata();
+  }
+
   @Get()
+  @Roles(Role.STUDENT)
   findAll(@Req() request: AuthenticatedRequest) {
     return this.projectsService.findAllForStudent(request.user.userId);
   }
 
   @Get(':id')
+  @Roles(Role.STUDENT, Role.FACULTY, Role.ADMIN)
   findOne(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
     return this.projectsService.findOneForStudent(id, request.user.userId);
   }
 
   @Post()
+  @Roles(Role.STUDENT)
   create(
     @Req() request: AuthenticatedRequest,
     @Body() body: CreateProjectInput,
@@ -48,7 +77,17 @@ export class ProjectsController {
     return this.projectsService.createForStudent(request.user.userId, body);
   }
 
+  @Patch(':id/publish-toggle')
+  @Roles(Role.STUDENT)
+  togglePublish(
+    @Req() request: AuthenticatedRequest,
+    @Param('id') id: string,
+  ) {
+    return this.projectsService.togglePublish(id, request.user.userId);
+  }
+
   @Patch(':id')
+  @Roles(Role.STUDENT)
   update(
     @Req() request: AuthenticatedRequest,
     @Param('id') id: string,
@@ -58,6 +97,7 @@ export class ProjectsController {
   }
 
   @Delete(':id')
+  @Roles(Role.STUDENT)
   remove(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
     return this.projectsService.removeForStudent(id, request.user.userId);
   }

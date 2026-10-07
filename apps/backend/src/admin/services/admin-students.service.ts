@@ -12,6 +12,7 @@ import {
   UpdateStudentDto,
   FilterStudentDto,
   BulkImportStudentsDto,
+  BulkAssignClassDto,
   parsePagination,
   buildPaginatedResponse,
 } from '../dto/admin.dto';
@@ -123,7 +124,9 @@ export class AdminStudentsService {
       where.departmentId = query.departmentId;
     }
 
-    if (query.classId) {
+    if (query.classId === 'unassigned') {
+      where.classId = null;
+    } else if (query.classId) {
       where.classId = query.classId;
     }
 
@@ -224,8 +227,9 @@ export class AdminStudentsService {
       name: string;
       email: string;
       passwordHash: string;
-      classId: string;
-      departmentId: string;
+      classId: string | null;
+      departmentId: string | null;
+      currentSemester: number | null;
     }[] = [];
 
     const emailsInBatch = new Set<string>();
@@ -258,12 +262,21 @@ export class AdminStudentsService {
       if (!item.password || !item.password.trim()) {
         errors.push({ row: rowNum, field: 'password', message: 'password is required' });
       }
-      if (!item.classId || !item.classId.trim()) {
-        errors.push({ row: rowNum, field: 'classId', message: 'classId is required' });
-      }
 
-      if (!item.classId || !classMap.has(item.classId.trim())) {
-        errors.push({ row: rowNum, field: 'classId', message: `Class with ID "${item.classId}" does not exist` });
+      let rowClassId: string | null = null;
+      let rowDepartmentId: string | null = null;
+      let rowSemester: number | null = null;
+
+      if (item.classId && item.classId.trim()) {
+        const trimmedClassId = item.classId.trim();
+        if (!classMap.has(trimmedClassId)) {
+          errors.push({ row: rowNum, field: 'classId', message: `Class with ID "${item.classId}" does not exist` });
+        } else {
+          const cls = classMap.get(trimmedClassId)!;
+          rowClassId = cls.id;
+          rowDepartmentId = cls.departmentId;
+          rowSemester = cls.currentSemester;
+        }
       }
 
       if (item.email) {
@@ -285,8 +298,7 @@ export class AdminStudentsService {
         }
       }
 
-      if (!errors.some((e) => e.row === rowNum) && item.classId && classMap.has(item.classId.trim())) {
-        const cls = classMap.get(item.classId.trim())!;
+      if (!errors.some((e) => e.row === rowNum)) {
         const passwordHash = await bcrypt.hash(item.password.trim(), 10);
 
         processedRows.push({
@@ -295,8 +307,9 @@ export class AdminStudentsService {
           name: item.name.trim(),
           email: item.email.trim().toLowerCase(),
           passwordHash,
-          classId: cls.id,
-          departmentId: cls.departmentId,
+          classId: rowClassId,
+          departmentId: rowDepartmentId,
+          currentSemester: rowSemester,
         });
       }
     }
@@ -321,6 +334,7 @@ export class AdminStudentsService {
             studentId: row.studentId,
             classId: row.classId,
             departmentId: row.departmentId,
+            currentSemester: row.currentSemester,
             academicInterests: [],
             careerInterests: [],
             skills: [],
@@ -334,6 +348,58 @@ export class AdminStudentsService {
       imported: processedRows.length,
       failed: 0,
       errors: [],
+    };
+  }
+
+  async bulkAssignClass(dto: BulkAssignClassDto) {
+    if (!dto || !Array.isArray(dto.studentIds) || dto.studentIds.length === 0) {
+      throw new BadRequestException('studentIds array is required and must not be empty');
+    }
+
+    if (!dto.classId || dto.classId === 'unassigned') {
+      const result = await this.prisma.user.updateMany({
+        where: {
+          id: { in: dto.studentIds },
+          role: Role.STUDENT,
+        },
+        data: {
+          classId: null,
+          departmentId: null,
+          currentSemester: null,
+        },
+      });
+      return {
+        success: true,
+        count: result.count,
+        message: `Successfully unassigned ${result.count} students`,
+      };
+    }
+
+    const targetClass = await this.prisma.class.findUnique({
+      where: { id: dto.classId },
+      include: { department: true },
+    });
+
+    if (!targetClass) {
+      throw new NotFoundException(`Class with ID "${dto.classId}" not found`);
+    }
+
+    const result = await this.prisma.user.updateMany({
+      where: {
+        id: { in: dto.studentIds },
+        role: Role.STUDENT,
+      },
+      data: {
+        classId: targetClass.id,
+        departmentId: targetClass.departmentId,
+        currentSemester: targetClass.currentSemester,
+      },
+    });
+
+    return {
+      success: true,
+      count: result.count,
+      message: `Successfully assigned ${result.count} student(s) to ${targetClass.department?.code || 'class'} (Batch ${targetClass.batchYear}${targetClass.section ? ` Sec ${targetClass.section}` : ''})`,
     };
   }
 }

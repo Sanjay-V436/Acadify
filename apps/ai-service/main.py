@@ -66,6 +66,7 @@ def test_embed(request: EmbedRequest):
 class FacultyProfileEmbedRequest(BaseModel):
     faculty_id: str
     text: str
+    metadata: dict | None = None
 
 
 @app.post("/ai/faculty-profile/embed")
@@ -76,17 +77,44 @@ def embed_faculty_profile(request: FacultyProfileEmbedRequest):
     try:
         embedding = model.encode(request.text).tolist()
         
+        # Safely preserve existing Chroma metadata to prevent wiping
+        existing_meta = {}
+        try:
+            existing = faculty_collection.get(ids=[request.faculty_id], include=["metadatas"])
+            if existing and existing.get("metadatas") and existing["metadatas"]:
+                existing_meta = existing["metadatas"][0] or {}
+        except Exception:
+            logger.warning("Could not retrieve existing metadata for %s", request.faculty_id)
+
+        meta = request.metadata or {}
+        
+        # Merge: Start with existing metadata, only update with non-empty incoming values
+        merged_meta = dict(existing_meta)
+        for k, v in meta.items():
+            if v is not None and str(v).strip() != "":
+                merged_meta[k] = v
+
+        # Build clean final metadata dictionary
+        final_meta = {
+            "name": str(merged_meta.get("name", "") or ""),
+            "email": str(merged_meta.get("email", "") or ""),
+            "department": str(merged_meta.get("department", "") or ""),
+            "designation": str(merged_meta.get("designation", "") or ""),
+            "qualification": str(merged_meta.get("qualification", "") or ""),
+            "research_interests": str(merged_meta.get("research_interests", "") or ""),
+            "publications": str(merged_meta.get("publications", "") or ""),
+            "orcid": str(merged_meta.get("orcid", "") or ""),
+            "profile_url": str(merged_meta.get("profile_url", "") or ""),
+            "available_for_projects": bool(merged_meta.get("available_for_projects", True)),
+            "max_students": int(merged_meta.get("max_students", 5)),
+            "current_students": int(merged_meta.get("current_students", 0)),
+        }
+        
         faculty_collection.upsert(
             ids=[request.faculty_id],
             documents=[request.text],
             embeddings=[embedding],
-            metadatas=[{
-                "name": "",
-                "email": "",
-                "designation": "",
-                "research_interests": "",
-                "profile_url": "",
-            }]
+            metadatas=[final_meta]
         )
         return {"status": "ok"}
     except Exception as e:
@@ -125,62 +153,35 @@ class MentorRecommendationRequest(BaseModel):
 # so swapping this for a real lookup later is a one-line change — nothing
 # else in the ranking logic needs to move.
 #
-# TODO: replace get_availability() with a real call to Sanjay's backend
-# or a direct DB read, once that access is worked out.
-# -----------------------------------------------------------------
-
-def get_availability(faculty_id: str) -> dict:
+def extract_availability(metadata: dict) -> dict:
     """
-    MOCK. Returns fake but deterministic availability data for a faculty_id,
-    so the same faculty always gets the same mock numbers across requests
-    (makes testing/demoing consistent instead of random every time).
+    Extracts availability from Chroma metadata or provides defaults.
+    Pure semantic ranking is preserved; real availability enrichment occurs in NestJS.
     """
-    seed = int(faculty_id.replace("-", "")[:8], 16)
-    rng = random.Random(seed)
+    avail_proj = metadata.get("available_for_projects", True)
+    if isinstance(avail_proj, str):
+        avail_proj = avail_proj.lower() in ("true", "1")
+    else:
+        avail_proj = bool(avail_proj)
 
-    max_students = rng.choice([2, 3, 4, 5])
-    current_students = rng.randint(0, max_students)
-    available_for_projects = rng.random() > 0.15  # ~85% of faculty accepting
+    try:
+        max_students = int(metadata.get("max_students", 5))
+    except (ValueError, TypeError):
+        max_students = 5
 
-    available_slots = max(0, max_students - current_students) if available_for_projects else 0
+    try:
+        current_students = int(metadata.get("current_students", 0))
+    except (ValueError, TypeError):
+        current_students = 0
+
+    available_slots = max(0, max_students - current_students) if avail_proj else 0
 
     return {
-        "available_for_projects": available_for_projects,
+        "available_for_projects": avail_proj,
         "max_students": max_students,
         "current_students": current_students,
         "available_slots": available_slots,
     }
-
-
-def rerank_with_availability(mentors: list[dict]) -> list[dict]:
-    """
-    Re-ranks semantic matches by factoring in availability, not just
-    similarity. A high-similarity faculty member with zero open slots
-    should rank below a lower-similarity faculty member with open slots —
-    this is the "relevant AND available" logic from the original project plan.
-
-    Approach: multiply the raw similarity score by an availability weight.
-    - available_slots = 0 (or not accepting projects)  -> heavy penalty
-    - available_slots > 0                               -> small bonus,
-      scaled by how much room they have relative to their max capacity
-    """
-    for mentor in mentors:
-        availability = get_availability(mentor["faculty_id"])
-
-        mentor["available_slots"] = availability["available_slots"]
-
-        if not availability["available_for_projects"] or availability["available_slots"] == 0:
-            availability_weight = 0.3  # heavy penalty, but not zeroed out entirely
-        else:
-            slot_ratio = availability["available_slots"] / max(1, availability["max_students"])
-            availability_weight = 0.85 + (0.15 * slot_ratio)  # ranges ~0.85 to 1.0
-
-        raw_score = mentor["confidence_score"]
-        mentor["confidence_score"] = round(raw_score * availability_weight, 3)
-
-    # Re-sort by the adjusted confidence_score, highest first
-    mentors.sort(key=lambda m: m["confidence_score"], reverse=True)
-    return mentors
 
 
 FALLBACK_REASON = (
@@ -224,6 +225,7 @@ def build_recommendation(
         "department": candidate["department"],
         "research_interests": candidate["research_interests"],
         "qualifications": candidate["qualifications"],
+        "qualification": candidate.get("qualification", candidate["qualifications"]),
         "profile_url": candidate["profile_url"],
         "confidence_score": candidate["confidence_score"],
         "research_match_percent": candidate["research_match_percent"],
@@ -311,18 +313,22 @@ def mentor_recommendation(
         metadata = results["metadatas"][0][i] or {}
         document = (results.get("documents") or [[]])[0][i] or ""
         distance = results["distances"][0][i]
-        availability = get_availability(faculty_id)
+        availability = extract_availability(metadata)
 
         research_match_percent = round(max(0, (1 - distance) * 100), 1)
         semantic_similarity = round(research_match_percent / 100, 3)
+
+        dept = metadata.get("department") or "Not provided"
+        qual = metadata.get("qualification") or metadata.get("qualifications") or "Not provided"
 
         candidates.append({
             "faculty_id": faculty_id,
             "name": metadata.get("name", "Not provided"),
             "designation": metadata.get("designation", "Not provided"),
-            "department": "Not provided",
+            "department": dept,
             "research_interests": metadata.get("research_interests", "Not provided"),
-            "qualifications": "Not provided",
+            "qualifications": qual,
+            "qualification": qual,
             "profile_url": metadata.get("profile_url", "Not provided"),
             "profile_document": document,
             "confidence_score": semantic_similarity,
@@ -332,15 +338,7 @@ def mentor_recommendation(
             **availability,
         })
 
-    try:
-        candidates = rerank_with_availability(candidates)
-    except Exception:
-        # If availability re-ranking fails for any reason, fall back to
-        # raw semantic ranking rather than failing the whole request —
-        # a slightly-worse-ranked result is much better than no result.
-        logger.exception("Availability re-ranking failed, falling back to raw semantic ranking")
-
-    logger.info("[AI] Chroma candidates: %d", len(candidates))
+    logger.info("[AI] Chroma candidates (pure semantic ranking): %d", len(candidates))
     analysis = gemini_service.analyze(
         project_title=request.project_title,
         project_description=request.description or "",

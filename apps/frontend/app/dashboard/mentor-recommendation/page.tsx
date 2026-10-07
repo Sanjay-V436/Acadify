@@ -25,6 +25,8 @@ interface Mentor {
   availableSlots?: number;
   max_students?: number;
   maxStudents?: number;
+  available_for_projects?: boolean;
+  availableForProjects?: boolean;
 }
 
 export default function MentorRecommendationPage() {
@@ -158,6 +160,8 @@ export default function MentorRecommendationPage() {
           const similarity = Math.round((m.semantic_similarity ?? m.confidence_score) * 100);
           const availableSlots = m.available_slots ?? m.availableSlots ?? 0;
           const maxStudents = m.max_students ?? m.maxStudents;
+          const isAcceptingProjects =
+            m.availableForProjects !== false && m.available_for_projects !== false;
 
           return (
           <div
@@ -229,8 +233,20 @@ export default function MentorRecommendationPage() {
               <span className="font-medium text-[#2B2B2E]/55">
                 Availability · {availableSlots}{maxStudents !== undefined ? ` of ${maxStudents}` : " slots"}
               </span>
-              <span className={`font-semibold ${availableSlots > 0 ? "text-emerald-700" : "text-[#A4123F]"}`}>
-                {availableSlots > 0 ? "Accepting students" : "Slots full"}
+              <span
+                className={`font-semibold ${
+                  !isAcceptingProjects
+                    ? "text-[#A4123F]"
+                    : availableSlots > 0
+                    ? "text-emerald-700"
+                    : "text-[#A4123F]"
+                }`}
+              >
+                {!isAcceptingProjects
+                  ? "Currently unavailable for new requests"
+                  : availableSlots > 0
+                  ? "Accepting students"
+                  : "Slots full"}
               </span>
             </div>
           </div>

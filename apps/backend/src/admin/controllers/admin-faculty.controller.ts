@@ -15,7 +15,7 @@ import { RolesGuard } from '../../auth/guards/roles.guard';
 import { AdminFacultyService } from '../services/admin-faculty.service';
 import type {
   CreateFacultyDto,
-  UpdateFacultyDto,
+  AdminUpdateFacultyAccountDto,
   FilterFacultyDto,
 } from '../dto/admin.dto';
 
@@ -41,7 +41,7 @@ export class AdminFacultyController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() body: UpdateFacultyDto) {
+  update(@Param('id') id: string, @Body() body: AdminUpdateFacultyAccountDto) {
     return this.service.update(id, body);
   }
 }

@@ -92,15 +92,48 @@ export class MentorRecommendationService {
 
       const enrichedMentors = aiMentors.map((mentor) => {
         const dbProfile = profileMap.get(mentor.faculty_id);
-        const maxStudents = dbProfile?.maxStudents ?? 0;
-        const currentStudents = dbProfile?.currentStudents ?? 0;
+
+        const maxStudents =
+          dbProfile?.maxStudents ??
+          (Number(mentor.max_students) || 5);
+
+        const currentStudents =
+          dbProfile?.currentStudents ??
+          (Number(mentor.current_students) || 0);
+
+        const department =
+          dbProfile?.user?.department?.name ??
+          (mentor.department && mentor.department !== 'Not provided'
+            ? String(mentor.department)
+            : 'N/A');
+
+        const availableForProjects =
+          dbProfile?.availableForProjects ??
+          (typeof mentor.available_for_projects === 'boolean'
+            ? mentor.available_for_projects
+            : true);
+
+        const qualification =
+          dbProfile?.qualification ??
+          (mentor.qualifications && mentor.qualifications !== 'Not provided'
+            ? String(mentor.qualifications)
+            : mentor.qualification && mentor.qualification !== 'Not provided'
+            ? String(mentor.qualification)
+            : undefined);
 
         return {
           ...mentor,
-          department: dbProfile?.user?.department?.name ?? 'N/A',
+          department,
+          qualification: qualification ?? mentor.qualification,
+          qualifications: qualification ?? mentor.qualifications,
+          availableForProjects,
+          available_for_projects: availableForProjects,
           maxStudents,
+          max_students: maxStudents,
           currentStudents,
+          current_students: currentStudents,
           availableSlots: Math.max(0, maxStudents - currentStudents),
+          available_slots: Math.max(0, maxStudents - currentStudents),
         };
       });
 

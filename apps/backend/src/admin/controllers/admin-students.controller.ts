@@ -19,6 +19,7 @@ import type {
   UpdateStudentDto,
   FilterStudentDto,
   BulkImportStudentsDto,
+  BulkAssignClassDto,
 } from '../dto/admin.dto';
 
 @Controller('admin/students')
@@ -30,6 +31,11 @@ export class AdminStudentsController {
   @Post('import')
   importBulk(@Body() body: BulkImportStudentsDto) {
     return this.service.importStudentsBulk(body);
+  }
+
+  @Post('bulk-assign-class')
+  bulkAssignClass(@Body() body: BulkAssignClassDto) {
+    return this.service.bulkAssignClass(body);
   }
 
   @Post()

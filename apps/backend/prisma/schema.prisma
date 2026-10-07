@@ -113,6 +113,7 @@ model FacultyProfile {
   qualification         String?
   experienceYears       Int?
   researchInterests     String[]
+  publications          String[] @default([])
   currentResearch       String?
   skills                String[]
   specialization        String?
@@ -138,6 +139,7 @@ model Project {
   technologies       String[]
   domain             String
   status             ProjectStatus @default(PROPOSED)
+  isPublished        Boolean       @default(false)
   githubUrl          String?
   liveDemoUrl        String?
   imageUrl           String?

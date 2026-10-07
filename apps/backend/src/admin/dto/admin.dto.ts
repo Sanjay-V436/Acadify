@@ -79,11 +79,16 @@ export class BulkImportStudentRowDto {
   name!: string;
   email!: string;
   password!: string;
-  classId!: string;
+  classId?: string;
 }
 
 export class BulkImportStudentsDto {
   students!: BulkImportStudentRowDto[];
+}
+
+export class BulkAssignClassDto {
+  studentIds!: string[];
+  classId?: string | null;
 }
 
 // Faculty DTOs
@@ -97,19 +102,16 @@ export class CreateFacultyDto {
   qualification?: string;
   experienceYears?: number;
   specialization?: string;
+  publications?: string[];
   maxStudents?: number;
 }
 
-export class UpdateFacultyDto {
-  name?: string;
-  departmentId?: string;
-  designation?: string;
-  bio?: string;
-  qualification?: string;
-  experienceYears?: number;
-  specialization?: string;
-  maxStudents?: number;
+export class AdminUpdateFacultyAccountDto {
+  email?: string;
+  departmentId?: string | null;
 }
+
+export class UpdateFacultyDto extends AdminUpdateFacultyAccountDto {}
 
 export class FilterFacultyDto {
   departmentId?: string;

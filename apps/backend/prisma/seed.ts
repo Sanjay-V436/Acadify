@@ -102,6 +102,7 @@ async function main() {
     update: {
       designation: 'Associate Professor',
       researchInterests: ['Machine Learning', 'IoT', 'Smart Systems'],
+      publications: [],
       currentResearch: 'Edge AI for agricultural sensing',
       skills: ['Python', 'TensorFlow', 'Embedded Systems'],
       specialization: 'AI and IoT',
@@ -113,6 +114,7 @@ async function main() {
       userId: facultyUser.id,
       designation: 'Associate Professor',
       researchInterests: ['Machine Learning', 'IoT', 'Smart Systems'],
+      publications: [],
       currentResearch: 'Edge AI for agricultural sensing',
       skills: ['Python', 'TensorFlow', 'Embedded Systems'],
       specialization: 'AI and IoT',

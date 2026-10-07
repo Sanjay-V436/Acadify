@@ -10,7 +10,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { ProfilesService } from '../../profiles/profiles.service';
 import {
   CreateFacultyDto,
-  UpdateFacultyDto,
+  AdminUpdateFacultyAccountDto,
   FilterFacultyDto,
   parsePagination,
   buildPaginatedResponse,
@@ -36,6 +36,7 @@ const formatFacultyResponse = (user: any) => {
       qualification: profile.qualification,
       experienceYears: profile.experienceYears,
       researchInterests: profile.researchInterests || [],
+      publications: profile.publications || [],
       currentResearch: profile.currentResearch,
       skills: profile.skills || [],
       specialization: profile.specialization,
@@ -112,7 +113,14 @@ export class AdminFacultyService {
           qualification: dto.qualification ? dto.qualification.trim() : null,
           experienceYears: dto.experienceYears !== undefined ? Number(dto.experienceYears) : null,
           specialization: dto.specialization ? dto.specialization.trim() : null,
-          maxStudents: dto.maxStudents !== undefined ? Number(dto.maxStudents) : 4,
+          publications: dto.publications || [],
+          researchInterests: [],
+          skills: [],
+          preferredDomains: [],
+          preferredTechnologies: [],
+          availableForProjects: true,
+          maxStudents: dto.maxStudents !== undefined ? Number(dto.maxStudents) : 5,
+          currentStudents: 0,
         },
       });
 
@@ -214,58 +222,57 @@ export class AdminFacultyService {
     return formatFacultyResponse(user);
   }
 
-  async update(id: string, dto: UpdateFacultyDto) {
+  async update(id: string, dto: AdminUpdateFacultyAccountDto) {
     const faculty = await this.findOne(id);
     if (!faculty) {
       throw new NotFoundException(`Faculty member with ID or Profile ID "${id}" not found`);
     }
     const userId = faculty.userId;
 
-    const userData: Record<string, unknown> = {};
-    const profileData: Record<string, unknown> = {};
+    const userData: { email?: string; departmentId?: string | null } = {};
 
-    if (dto.name !== undefined) userData.name = dto.name.trim();
+    // 1. Email update & validation
+    if (dto.email !== undefined) {
+      if (!dto.email || typeof dto.email !== 'string') {
+        throw new BadRequestException('Email must be a non-empty string');
+      }
+      const emailLower = dto.email.trim().toLowerCase();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(emailLower)) {
+        throw new BadRequestException(`"${dto.email}" is not a valid email address`);
+      }
+
+      const existing = await this.prisma.user.findUnique({
+        where: { email: emailLower },
+      });
+      if (existing && existing.id !== userId) {
+        throw new ConflictException(`An account with email "${emailLower}" already exists`);
+      }
+      userData.email = emailLower;
+    }
+
+    // 2. Department update & validation
     if (dto.departmentId !== undefined) {
       if (dto.departmentId) {
+        const deptId = String(dto.departmentId).trim();
         const dept = await this.prisma.department.findUnique({
-          where: { id: dto.departmentId },
+          where: { id: deptId },
         });
         if (!dept) {
           throw new NotFoundException(`Department with ID "${dto.departmentId}" not found`);
         }
+        userData.departmentId = deptId;
+      } else {
+        userData.departmentId = null;
       }
-      userData.departmentId = dto.departmentId || null;
     }
 
-    if (dto.designation !== undefined) profileData.designation = dto.designation ? dto.designation.trim() : null;
-    if (dto.bio !== undefined) profileData.bio = dto.bio ? dto.bio.trim() : null;
-    if (dto.qualification !== undefined) profileData.qualification = dto.qualification ? dto.qualification.trim() : null;
-    if (dto.experienceYears !== undefined) profileData.experienceYears = Number(dto.experienceYears);
-    if (dto.specialization !== undefined) profileData.specialization = dto.specialization ? dto.specialization.trim() : null;
-    if (dto.maxStudents !== undefined) profileData.maxStudents = Number(dto.maxStudents);
-
-    await this.prisma.$transaction(async (tx) => {
-      if (Object.keys(userData).length > 0) {
-        await tx.user.update({
-          where: { id: userId },
-          data: userData,
-        });
-      }
-
-      if (Object.keys(profileData).length > 0) {
-        await tx.facultyProfile.update({
-          where: { userId },
-          data: profileData,
-        });
-      }
-    });
-
-    if (Object.keys(profileData).length > 0) {
-      try {
-        await this.profilesService.reembedFacultyProfile(userId);
-      } catch {
-        // Non-blocking
-      }
+    // 3. Apply updates to User only (never touch FacultyProfile or re-embed AI)
+    if (Object.keys(userData).length > 0) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: userData,
+      });
     }
 
     return this.findOne(userId);

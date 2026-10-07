@@ -103,6 +103,8 @@ export interface Faculty {
     experienceYears?: number | null;
     qualification?: string | null;
     bio?: string | null;
+    researchInterests?: string[];
+    publications?: string[];
   };
 }
 
@@ -201,8 +203,17 @@ export const createFaculty = (body: {
   specialization?: string;
 }) => apiCall<Faculty>("/admin/faculty", { method: "POST", body: JSON.stringify(body) });
 
-export const updateFaculty = (id: string, body: Record<string, unknown>) =>
-  apiCall<Faculty>(`/admin/faculty/${id}`, { method: "PATCH", body: JSON.stringify(body) });
+export const updateFaculty = (
+  id: string,
+  body: {
+    email?: string;
+    departmentId?: string | null;
+  },
+) =>
+  apiCall<Faculty>(`/admin/faculty/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
 
 // Students API
 export const getStudents = (params?: { departmentId?: string; classId?: string; search?: string; page?: number; limit?: number }) => {
@@ -234,7 +245,7 @@ export interface BulkImportStudentRow {
   name: string;
   email: string;
   password: string;
-  classId: string;
+  classId?: string;
 }
 
 export const importStudentsBulk = (students: BulkImportStudentRow[]) =>
@@ -244,6 +255,12 @@ export const importStudentsBulk = (students: BulkImportStudentRow[]) =>
     failed: number;
     errors: Array<{ row: number; field?: string; message: string }>;
   }>("/admin/students/import", { method: "POST", body: JSON.stringify({ students }) });
+
+export const bulkAssignStudentsToClass = (studentIds: string[], classId: string) =>
+  apiCall<{ success: boolean; count: number; message: string }>("/admin/students/bulk-assign-class", {
+    method: "POST",
+    body: JSON.stringify({ studentIds, classId }),
+  });
 
 // Teaching Assignments API
 export const getTeachingAssignments = (classId?: string) => {
